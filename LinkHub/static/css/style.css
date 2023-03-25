@@ -1,0 +1,28 @@
+.types {
+    list-style-type: none;
+    display: flex;
+    justify-content: left;
+    padding-left: 0px;
+}
+
+.first_direction_type {
+    background-color: blueviolet;
+    padding: 5px;
+    margin: 4px;
+    margin-left: 0px;
+}
+
+.direction_type {
+    background-color: blueviolet;
+    padding: 5px;
+    margin: 4px;
+}
+
+.project_head {
+    padding: 10px;
+}
+
+.more_info {
+    margin-right: 5px;
+    text-align: right;
+}

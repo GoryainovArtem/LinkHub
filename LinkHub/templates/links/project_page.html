@@ -6,20 +6,27 @@
   <h1>
     LinkHub
   </h1>
-  <div class="">
-    <ul>
-      <li>
-        <a>Программирование</a>
-      </li>
-       <li>
-        <a>Web разработка</a>
-      </li>
-      <li>
-        <a>Саморазвитие</a>
-      </li>
-    </ul>
+  <ul class="types navbar">
+    <li class="first_direction_type">
+      <a>Программирование</a>
+    </li>
+     <li class="direction_type">
+      <a>Web разработка</a>
+    </li>
+    <li class="direction_type">
+      <a>Саморазвитие</a>
+    </li>
+    <li class="direction_type">
+      <a>Программирование</a>
+    </li>
+     <li class="direction_type">
+      <a>Web разработка</a>
+    </li>
+    <li class="direction_type">
+      <a>Саморазвитие</a>
+    </li>
 
-  </div>
+  </ul>
   <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed purus neque, dapibus non libero eu, hendrerit ultricies elit. Quisque sollicitudin tortor nec justo luctus, ac ultrices orci facilisis. Phasellus ac leo nisl. Aenean fermentum odio sed vulputate ultricies. Curabitur pharetra urna quis lectus tempor, ac porta velit varius. Aliquam varius posuere lorem, sit amet varius felis congue non. Mauris a massa aliquet, iaculis ex eget, aliquam magna.
 
 Sed non lorem eu augue condimentum accumsan. Phasellus nunc purus, cursus a cursus sed, sodales vel erat. Donec quis libero cursus, accumsan lorem vitae, pretium nisi. Suspendisse potenti. Integer arcu eros, vestibulum non ipsum sit amet, mollis iaculis augue. Aliquam ligula felis, euismod et libero sit amet, tincidunt varius libero. Sed vitae scelerisque orci, a rhoncus urna. Sed ac pretium augue. Nunc faucibus nisi leo, porta efficitur risus ultrices vulputate. Morbi nulla nunc, fringilla nec ligula ut, egestas sodales est. Sed facilisis orci dolor, eu accumsan orci vehicula non. Pellentesque auctor urna at odio sollicitudin, quis cursus dolor dictum.
@@ -41,56 +48,42 @@ Proin in congue est. Maecenas euismod id enim id aliquam. In congue volutpat eni
   </li>
   </ul>
   </p>
-  <br>
-  <form>
-    <select>
-      <option>Ссылка</option>
-      <option>Видео</option>
-      <option>Файл</option>
-      <option>Изображение</option>
-    </select>
-
-    <select>
-      <option>Артем</option>
-      <option>Видео</option>
-      <option>Файл</option>
-      <option>Изображение</option>
-    </select>
-    <button type="submit">Искать</button>
-  </form>
-  <form>
+  <form class="my-4">
     <input type="text" name="" id="">
     <button type="submit">Искать</button>
   </form>
-  <div class="content">
-    <div class="media mb-4" style="background-color: gray">
+  <div class="my-4">
+    <h4>
+      Содержание:
+    </h4></div>
+    <div class="media mb-4 project_head" style="background-color: gray">
       <div class="media-body">
         <h5 class="mt-0">
           <a href="">
             Архив прошлого года
           </a>
         </h5>
+        <p>
+          Старший курс загрузил лекции Симушева
+        </p>
+        <h6 class="more_info">
+            Подробнее
+        </h6>
+      </div>
+    </div>
+    <div class="media mb-4 project_head" style="background-color: gray">
+      <div class="media-body">
         <h5 class="mt-0">
           <a href="">
-            Тип: ссылка
+            Архив прошлого года
           </a>
         </h5>
         <p>
           Старший курс загрузил лекции Симушева
         </p>
+        <h6 class="more_info">
+            Подробнее
+        </h6>
       </div>
     </div>
-    <div class="media mb-4" style="background-color: gray">
-      <div class="media-body">
-        <h5 class="mt-0">
-          <a href="">
-            Артем
-          </a>
-        </h5>
-        <p>
-          Контент ссылки
-        </p>
-      </div>
-    </div>
-  </div>
 {% endblock %}
