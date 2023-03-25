@@ -3,4 +3,5 @@ from django.shortcuts import render
 
 
 def index(request):
-    return HttpResponse('Главная страница')
+    template = 'links/project_page.html'
+    return render(request, template)
