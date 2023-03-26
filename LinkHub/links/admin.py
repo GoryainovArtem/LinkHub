@@ -8,4 +8,10 @@ class CustomProject(admin.ModelAdmin):
     list_editable = ('title', 'description', 'is_private', 'is_group_project')
 
 
+class CustomTheme(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    list_editable = ('name',)
+
+
 admin.site.register(Project, CustomProject)
+admin.site.register(Theme, CustomTheme)

@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+{% extends 'base.html' %}
+{% block title %}
+  Недавние
+{% endblock %}
+{% block content %}
+  <h1>
+    Недавние
+  </h1>
+  {% for project in projects %}
+    <div class="media mb-4 project_head" style="background-color: gray">
+      <div class="media-body">
+        <h5 class="mt-0">
+          <a href="">
+            {{ project.title }}
+          </a>
+        </h5>
+        <p>
+          {{ project.description }}
+        </p>
+        <h6 class="more_info">
+            Подробнее
+        </h6>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}

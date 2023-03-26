@@ -7,27 +7,45 @@ User = get_user_model()
 #     name
 #     status
 
+
 class BaseClass(models.Model):
-    title = models.CharField('Название', max_length=100)
-    description = models.TextField('описание', null=True, blank=True)
+    title = models.CharField('Название',
+                             max_length=100,
+                             help_text='Введите название')
+    description = models.TextField('описание',
+                                   null=True,
+                                   blank=True,
+                                   help_text='Добавьте описание')
     created = models.DateTimeField('дата создания', auto_now_add=True)
     last_edit = models.DateTimeField('дата последнего редактирования', auto_now=True)
 
     class Meta:
         abstract = True
 
+    def __str__(self):
+        return self.title
+
 
 class Theme(models.Model):
     name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = 'Тема'
+        verbose_name_plural = 'Темы'
+        ordering = ('name', )
+
+    def __str__(self):
+        return self.name
 
 
 class Project(BaseClass):
     ACCESS_TYPES = ((True, 'Private'), (False, 'Public'))
     GROUP_TYPES = ((True, 'Группа'), (False, 'Только я'))
     theme = models.ManyToManyField(Theme,
-                                   verbose_name='направления',
+                                   verbose_name='Тематика',
                                    related_name='projects',
-                                   blank=True, null=True)
+                                   blank=True, null=True,
+                                   help_text='Выберите тематику проекта')
     main_admin = models.ForeignKey(User,
                                    on_delete=models.DO_NOTHING,
                                    verbose_name='создатель',
@@ -35,7 +53,8 @@ class Project(BaseClass):
                                    )
     editor = models.ManyToManyField(User,
                                     verbose_name='Редакторы',
-                                    related_name='projects_edit')
+                                    related_name='projects_edit',
+                                    blank=True, null=True)
 
     is_private = models.BooleanField('Тип проекта', default=False,
                                      choices=ACCESS_TYPES,
@@ -72,6 +91,7 @@ class Link(BaseClass):
 
 
 class Comment(models.Model):
+    DISPLAY_TEXT_LETTERS_AMOUNT = 15
     text = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User,
@@ -82,3 +102,23 @@ class Comment(models.Model):
         ordering = ('-created', )
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text[:self.DISPLAY_TEXT_LETTERS_AMOUNT]
+
+
+class Star(models.Model):
+    project = models.ForeignKey(Project,
+                                on_delete=models.CASCADE,
+                                related_name='stars')
+    liked = models.ForeignKey(User,
+                              on_delete=models.CASCADE,
+                              related_name='stars')
+
+    class Meta:
+        verbose_name = 'Звезда'
+        verbose_name_plural = 'Звезды'
+
+
+# class Follow(models.Model):
+#     ...
