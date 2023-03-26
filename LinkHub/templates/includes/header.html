@@ -1,7 +1,7 @@
 {% load static %}
 <nav class="navbar navbar-light" style="background-color: black">
   <div class="container">
-    <a class="navbar-brand" href="">
+    <a class="navbar-brand" href="{% url 'links:index' %}">
       <img src="{% static 'image/logo.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
       <span style="color:white">LinkHub</span>
     </a>
@@ -21,7 +21,7 @@
       </li>
       <li class="nav-item">
         <a class="nav-link"
-          href="">Создать</a>
+          href="{% url 'links:create_project' %}">Создать</a>
       </li>
       <li class="nav-item">
         <a class="nav-link"

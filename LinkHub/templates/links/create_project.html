@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}
+  Создать проект
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 p-5">
+    <div class="card">
+      <div class="card-header">Создать проект</div>
+      <div class="card-body">
+        <form action="">
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="form-group row my-3">
+              <label>
+               {{ field.label }}
+              </label>
+            </div>
+            {{ field }}
+          {% endfor %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
