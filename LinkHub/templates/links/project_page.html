@@ -59,34 +59,21 @@
     <h4>
       Содержание:
     </h4></div>
-    <div class="media mb-4 project_head" style="background-color: gray">
-      <div class="media-body">
-        <h5 class="mt-0">
-          <a href="">
-            Архив прошлого года
-          </a>
-        </h5>
-        <p>
-          Старший курс загрузил лекции Симушева
-        </p>
-        <h6 class="more_info">
-            Подробнее
-        </h6>
+    {% for head in project.heads.all %}
+      <div class="media mb-4 project_head" style="background-color: gray">
+        <div class="media-body">
+          <h5 class="mt-0">
+            <a href="{% url 'links:head' head.id %}">
+              {{ head.title}}
+            </a>
+          </h5>
+          <p>
+            {{ head.description }}
+          </p>
+          <h6 class="more_info">
+              Подробнее
+          </h6>
+        </div>
       </div>
-    </div>
-    <div class="media mb-4 project_head" style="background-color: gray">
-      <div class="media-body">
-        <h5 class="mt-0">
-          <a href="">
-            Архив прошлого года
-          </a>
-        </h5>
-        <p>
-          Старший курс загрузил лекции Симушева
-        </p>
-        <h6 class="more_info">
-            Подробнее
-        </h6>
-      </div>
-    </div>
+    {% endfor %}
 {% endblock %}

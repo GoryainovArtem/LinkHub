@@ -3,8 +3,8 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 
 from .color_generator import color_generator
-from .models import Project
-from .forms import ProjectForm
+from .models import Project, Head, Link
+from .forms import ProjectForm, LinkForm
 
 
 def index(request):
@@ -19,10 +19,6 @@ def project_detailed(request, id):
         'project': project,
     }
     return render(request, template, context)
-
-
-def theme_list(request):
-    return HttpResponse
 
 
 def create_project(request):
@@ -49,3 +45,32 @@ def like_project(request, id):
 
 def deny_like(request, id):
     pass
+
+
+def head(request, head_id):
+    template = 'links/heads.html'
+    head = get_object_or_404(Head, id=head_id)
+    context = {
+        'head': head
+    }
+    return render(request, template, context)
+
+
+def link(request, link_id):
+    link = get_object_or_404(Link, id=link_id)
+    context = {
+        'link': link
+    }
+    template = 'links/link_detail.html'
+    return render(request, template, context)
+
+
+def link_edit(request, link_id):
+    link = get_object_or_404(Link, id=link_id)
+    form = LinkForm(request.POST or None, instance=link)
+    context = {
+        'form': form,
+        'link': link
+    }
+    template = 'links/link_detail.html'
+    return render(request, template, context)

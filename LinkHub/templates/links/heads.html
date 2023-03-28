@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}
+  {{ head.title }}
+{% endblock %}
+{% block content %}
+  <h1 class="mb-4">
+   {{ head.project.title }} / {{ head.title }}
+  </h1>
+  {% for link in head.links.all %}
+    <div class="media mb-4 project_head" style="background-color: #F5F5F5">
+      <div class="media-body">
+        <h5 class="mt-0">
+          <a href="{% url 'links:link' link.id %}">
+            {{ forloop.counter }}. {{ link.title }}
+          </a>
+        </h5>
+        <h6 class="mt-0">
+          <a href="{{ link.url }}" target="_blank " >
+            {{ link.url }}
+          </a>
+        </h6>
+        <p>
+          {{ link.description }}
+        </p>
+        <h6 class="more_info">
+            Подробнее
+        </h6>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}
