@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Project, Theme, Head, Link, Comment
+from .forms import CreateLinkForm
 
 
 class CustomProject(admin.ModelAdmin):
@@ -22,6 +23,7 @@ class CustomTheme(admin.ModelAdmin):
 class CustomLink(admin.ModelAdmin):
     list_display = ('id', 'title', 'description', 'url')
     list_editable = ('title', 'title', 'description', 'url')
+    form = CreateLinkForm
 
 
 admin.site.register(Link, CustomLink)

@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404
 
 from .color_generator import color_generator
 from .models import Project, Head, Link
-from .forms import ProjectForm, LinkForm
+from .forms import ProjectForm, LinkForm, CreateLinkForm, CreateHeadForm
 
 
 def index(request):
@@ -39,11 +39,11 @@ def recent(request, username):
     return render(request, template, context=context)
 
 
-def like_project(request, id):
+def like_project(request, project_id):
     pass
 
 
-def deny_like(request, id):
+def deny_like(request, project_id):
     pass
 
 
@@ -54,6 +54,29 @@ def head(request, head_id):
         'head': head
     }
     return render(request, template, context)
+
+
+def create_head(request):
+    template = 'links/create_head.html'
+    form = CreateHeadForm()
+    context = {
+        'is_editing': False,
+        'form': form
+    }
+    return render(request, template, context)
+
+
+def head_edit(request, head_id):
+    head = get_object_or_404(Head, id=head_id)
+    template = 'links/create_head.html'
+    form = CreateHeadForm(request.POST or None,
+                          instance=head)
+    context = {
+        'is_editing': True,
+        'form': form
+    }
+    return render(request, template, context)
+
 
 
 def link(request, link_id):
@@ -73,4 +96,13 @@ def link_edit(request, link_id):
         'link': link
     }
     template = 'links/link_detail.html'
+    return render(request, template, context)
+
+
+def create_link(request):
+    template = 'links/create_link.html'
+    form = CreateLinkForm()
+    context = {
+        'form': form
+    }
     return render(request, template, context)

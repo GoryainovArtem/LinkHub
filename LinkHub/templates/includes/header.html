@@ -7,10 +7,12 @@
     </a>
     {% with request.resolver_match.view_name as view_name %}
     <ul class="nav nav-pills">
+      {% if user.is_authenticated %}
       <li class="nav-item">
         <a class="nav-link"
           href="{% url 'links:recent_projects' user.username %}">Недавние</a>
       </li>
+      {% endif %}
       <li class="nav-item">
         <a class="nav-link"
           href="">Витрина</a>

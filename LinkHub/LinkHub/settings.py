@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'links.apps.LinksConfig',
-    'core.apps.CoreConfig'
+    'core.apps.CoreConfig',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
 
 MIDDLEWARE = [
@@ -125,3 +127,13 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'), ]
+
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+
+CKEDITOR_CONFIGS = {
+    'default':
+        {'width': 'auto',
+         },
+}

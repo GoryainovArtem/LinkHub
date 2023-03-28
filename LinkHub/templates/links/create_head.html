@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load user_filters %}
+{% block title %}
+  {% if is_editing %}
+    Редактирование главы "{{ form.instance.title|truncatechars:10 }}
+  {% else %}
+    Создание главы
+  {% endif %}
+{% endblock %}
+{% block content %}
+  <h3>
+  {% if is_editing %}
+    Редактирование главы "{{ form.instance.title }}"
+  {% else %}
+    Создание новой главы
+  {% endif %}
+  </h3>
+  {{ form.media }}
+  {% if form.errors %}
+    {% for field in form %}
+      {% for error in field.errors %}
+        <div class="alert alert-danger">
+          {{ error|escape }}
+        </div>
+      {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+      <div class="alert alert-danger">
+        {{ errors|escape }}
+      </div>
+    {% endfor %}
+  {% endif %}
+  <form action="" method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="my-3"
+      {% if field.field.required %}
+        aria-required="true"
+      {% else %}
+        aria-required="false"
+      {% endif %}
+    >
+      <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}
+          <span class="required text-danger">*</span>
+        {% endif %}
+      </label><br>
+      {{ field|addclass:'form-control' }}
+      {% if field.help_text %}
+        <small id="{{ field.id_for_label }}-help" class="form-text text-muted">
+          {{ field.help_text}}
+        </small>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <div class="col-md-6 offset-md-4">
+      <button type="submit" class="btn btn-primary">
+        Сохранить изменения
+      </button>
+    </div>
+  </form>
+{% endblock %}
