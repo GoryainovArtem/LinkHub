@@ -97,6 +97,9 @@ class Comment(models.Model):
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
                                related_name='comments')
+    link = models.ForeignKey(Link,
+                             on_delete=models.CASCADE,
+                             related_name='comments')
 
     class Meta:
         ordering = ('-created', )

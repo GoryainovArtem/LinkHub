@@ -26,8 +26,13 @@
           href="{% url 'links:create_project' %}">Создать</a>
       </li>
       <li class="nav-item">
+        {% if user.is_authenticated %}
         <a class="nav-link"
-          href="">Профиль</a>
+          href="{% url 'links:profile' user.username %}">Профиль</a>
+        {% else %}
+        <a class="nav-link"
+          href="">Войти</a>
+        {% endif %}
       </li>
     </ul>
     {% endwith %}

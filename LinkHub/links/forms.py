@@ -28,6 +28,17 @@ class CreateLinkForm(forms.ModelForm):
         fields = ('title', 'description', 'url')
 
 
+class CreateLinkAdminForm(forms.ModelForm):
+    description = forms.CharField(
+        label='Описание',
+        help_text='Добавьте описание',
+        widget=CKEditorUploadingWidget(), required=False)
+
+    class Meta:
+        model = Link
+        fields = ('title', 'description', 'url', 'head')
+
+
 class CreateHeadForm(forms.ModelForm):
     description = forms.CharField(
         label='Описание',

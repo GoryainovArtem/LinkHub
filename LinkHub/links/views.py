@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 
 from .color_generator import color_generator
-from .models import Project, Head, Link
+from .models import Project, Head, Link, Comment
 from .forms import ProjectForm, LinkForm, CreateLinkForm, CreateHeadForm
 
 
@@ -78,10 +78,12 @@ def head_edit(request, head_id):
     return render(request, template, context)
 
 
-
 def link(request, link_id):
     link = get_object_or_404(Link, id=link_id)
+    comments = link.comments.select_related('author')
+    print('Комменты:', comments)
     context = {
+        'comments': comments,
         'link': link
     }
     template = 'links/link_detail.html'
@@ -106,3 +108,8 @@ def create_link(request):
         'form': form
     }
     return render(request, template, context)
+
+
+@login_required
+def profile(request, username):
+    return HttpResponse('Страница профиля')

@@ -16,5 +16,6 @@ urlpatterns = [
     path('head_<int:head_id>/edit/', views.head_edit, name='head_edit'),
     path('link_<int:link_id>/', views.link, name='link'),
     path('link_<int:link_id>/edit/', views.link_edit, name='link_edit'),
-    path('create_link/', views.create_link, name='create_link')
+    path('create_link/', views.create_link, name='create_link'),
+    path('profile/<str:username>', views.profile, name='profile')
 ]

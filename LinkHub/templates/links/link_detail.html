@@ -7,26 +7,48 @@
 <h3>
   {{ link.head.project.title }} / {{ link.head.title }} / {{ link.title }}
 </h3>
-<div class="row justify-content-center">
-  <div class="col-md-8 p-4">
-    <div class="card">
-      <div class="card-header">{{ link.title }}</div>
-      <div class="card-body">
-        <span>
-          <h6>Описание:</h6>
-          {{ link.description }}
-        </span>
-        <span>
-          <h6>Ссылка:</h6>
-          <a href="{{ link.url }}">
-            {{ link.url }}
-          </a>
-        </span>
-      </div>
-      <a href="">
-        Редактировать
+    <span>
+      <h6>Описание:</h6>
+      {{ link.description }}
+    </span>
+    <span>
+      <h6>Ссылка:</h6>
+      <a href="{{ link.url }}">
+        {{ link.url }}
       </a>
-    </div>
-  </div>
-</div>
+    </span>
+    <a href="">
+    Редактировать
+    </a>
+
+<!--Комментарии-->
+        <div class="card my-4">
+          <h5 class="card-header">Добавить комментарий</h5>
+          <div class="card-body">
+            <form method="post" action="">
+              {% csrf_token %}
+              <div class="form-group mb-2">
+                11
+              </div>
+              <button type=submit class="btn btn-primary">Отправить</button>
+            </form>
+          </div>
+        </div>
+      <h4 class="mb-4">Комментарии:</h4>
+
+      {% for comment in comments %}
+        <div class="media mb-4">
+          <div class="media-body">
+            <h5 class="mt-0">
+              <a href="">
+                {{ comment.author.username }}
+              </a>
+            </h5>
+            <p>
+                {{ comment.text }}
+            </p>
+          </div>
+        </div>
+      {% endfor %}
+
 {% endblock %}

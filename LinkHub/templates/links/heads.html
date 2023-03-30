@@ -14,7 +14,7 @@
           <div class="media_inner_left" >
             <h5 class="mt-0">
               <a href="{% url 'links:link' link.id %}">
-                {{ link.title }}
+                {{ forloop.counter }}. {{ link.title }}
               </a>
             </h5>
             <h6 class="mt-0">
