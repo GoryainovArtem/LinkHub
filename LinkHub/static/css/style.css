@@ -131,3 +131,43 @@ main {
   bottom: 0;
   right: 0;
 }
+
+.profile_container {
+  display: flex;
+}
+
+.profile_info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-left: 30px;
+}
+
+.mart_project {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid orange;
+  width: 220px;
+  height: 120px;
+}
+
+.projects_container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.info_container {
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.info_container span {
+  margin-top: 15px;
+}
+
+.option_buttons {
+  display: flex;
+  justify-content: space-between;
+}

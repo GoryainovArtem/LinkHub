@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Project, Theme, Head, Link, Comment
-from .forms import CreateLinkForm, CreateLinkAdminForm
+from .models import Project, Theme, Head, Link, Comment, Star
+from .forms import CreateLinkAdminForm
 
 
 class CustomProject(admin.ModelAdmin):
@@ -31,6 +31,11 @@ class CustomComment(admin.ModelAdmin):
     list_editable = ('text', )
 
 
+class CustomStar(admin.ModelAdmin):
+    list_display = ('id', 'project', 'liked')
+
+
+admin.site.register(Star, CustomStar)
 admin.site.register(Comment, CustomComment)
 admin.site.register(Link, CustomLink)
 admin.site.register(Project, CustomProject)

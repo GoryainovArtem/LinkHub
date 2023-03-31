@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 
 from .color_generator import color_generator
-from .models import Project, Head, Link, Comment
+from .models import Project, Head, Link, Comment, User
 from .forms import ProjectForm, LinkForm, CreateLinkForm, CreateHeadForm
 
 
@@ -110,6 +110,10 @@ def create_link(request):
     return render(request, template, context)
 
 
-@login_required
 def profile(request, username):
-    return HttpResponse('Страница профиля')
+    user = get_object_or_404(User, username=username)
+    template = 'links/profile.html'
+    context = {
+        'profile': user
+    }
+    return render(request, template, context)

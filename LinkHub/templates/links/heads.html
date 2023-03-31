@@ -4,9 +4,10 @@
 {% endblock %}
 {% block content %}
   {% load static %}
-  <h1 class="mb-4">
+  <h1 class="mb-3">
    {{ head.project.title }} / {{ head.title }}
   </h1>
+  <p class="mb-3">{{ head.project.description }}</p>
   {% for link in head.links.all %}
     <div class="media mb-4 project_head" style="background-color: #F5F5F5">
       <div class="media-body">

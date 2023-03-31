@@ -31,21 +31,31 @@
         <h5>Команда разработчиков:</h5>
         <ul>
           <li>
-            <a href="">{{ project.main_admin.username }}</a>
+            <a href="{% url 'links:profile' project.main_admin.username %}">{{ project.main_admin.username }} (создатель)</a>
           </li>
           {% for editor in project.editor.all %}
             <li>
-              <a href="">{{ editor.username }}</a>
+              <a href="{% url 'links:profile' editor.username %}">{{ editor.username }}</a>
             </li>
           {% endfor %}
         </ul>
     </div>
     <div class="likes" >
         <div class="stars">
-          <a href="">
-            <img src="{% static 'image/star.png' %}" width="50" height="50" alt="">
-          </a>
-          <span class="likes_title">923 likes</span>
+          {% if project.stars.liked == user %}
+            <a href="">
+              <img src="{% static 'image/star.png' %}" width="50" height="50" alt=""
+                  class=""
+              >
+            </a>
+          {% else %}
+            <a href="">
+              <img src="{% static 'image/star.png' %}" width="50" height="50" alt=""
+                  class=""
+              >
+            </a>
+          {% endif %}
+          <span class="likes_title">Понравился проект: {{ project.stars.count }} </span>
         </div>
     </div>
   </div>

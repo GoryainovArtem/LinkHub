@@ -138,3 +138,6 @@ CKEDITOR_CONFIGS = {
         {'width': 'auto',
          },
 }
+
+LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = 'link:index'
