@@ -4,18 +4,21 @@
   Профиль
 {% endblock %}
 {% block content %}
-  <h2 class="mb-3" >Профиль пользователя {{ profile.username }}:</h2>
+  <div class="profile_title">
+    <h2 class="mb-3" >Профиль пользователя {{ profile.username }}:</h2>
+    <a href="{% url 'users:logout' %}"><img src="{% static 'image/exit.png' %}" width="25" height="25"></a>
+  </div>
   <div class="profile_container">
     <img src="ava.jpg" height="200" width="170" alt="" />
     <div class="profile_info">
         <div class="info_container">
             <span><b>О себе: </b></span>
             <span><b>Имя: </b>{{ profile.get_full_name }}</span>
-            <span><b>Почта: </b>{{ profile.email }}</span>
+            <span><b>Почта: </b></span>
         </div>
         <div class="option_buttons">
-            <button class="btn btn-primary edit_profile">Редактировать профиль</button>
-            <button class="btn btn-primary edit_profile">Изменить пароль</button>
+            <a href="{% url 'links:edit_profile' user.username %}" class="btn btn-primary edit_profile">Редактировать профиль</a>
+            <a class="btn btn-primary edit_profile">Изменить пароль</a>
         </div>
     </div>
   </div>

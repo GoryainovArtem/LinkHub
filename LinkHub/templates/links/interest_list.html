@@ -1,20 +1,21 @@
 {% extends 'base.html' %}
 {% block title %}
-  Главная страница
+  {{ theme.name }}
 {% endblock %}
 {% block content %}
-  <h3> Опубликованные проекты </h3>
-  <form method="get">
+  <h3> Проекты на тему: "{{ theme.name }}"</h3>
+  <form class="my-4" method="get" action="">
+    {% csrf_token %}
+    <div class="search_block">
+      <input class="search_line" type="text" placeholder="Введите название проекта" name="q">
+      <button type="submit" class="btn btn-primary">Искать</button>
+    </div>
+  </form>
+  <form method="post">
     {% csrf_token %}
     {% for field in form %}
-      <div>
-        <label>
-          {{ field.label }}
-        </label>
-        {{ field }}
-      </div>
+      {{ field }}
     {% endfor %}
-    <button type="submit" class="btn btn-primary">Найти проект</button>
   </form>
   {% for project in projects %}
     <div class="media mb-4 project_head" style="background-color: #F5F5F5">

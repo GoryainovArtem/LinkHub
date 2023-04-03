@@ -4,17 +4,10 @@
 {% endblock %}
 {% block content %}
   <h3> Опубликованные проекты </h3>
-  <form method="get">
+  <form method="post">
     {% csrf_token %}
-    {% for field in form %}
-      <div>
-        <label>
-          {{ field.label }}
-        </label>
-        {{ field }}
-      </div>
-    {% endfor %}
-    <button type="submit" class="btn btn-primary">Найти проект</button>
+    {{ form.type }}
+    <button type="submit"></button>
   </form>
   {% for project in projects %}
     <div class="media mb-4 project_head" style="background-color: #F5F5F5">

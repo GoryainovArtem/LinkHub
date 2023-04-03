@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Project, Theme, Head, Link, Comment, Star
+from .models import Project, Theme, Head, Link, Comment, Star, UserProfile
 from .forms import CreateLinkAdminForm
 
 
@@ -35,6 +35,11 @@ class CustomStar(admin.ModelAdmin):
     list_display = ('id', 'project', 'liked')
 
 
+class CustomUserProfile(admin.ModelAdmin):
+    list_display = ('id', 'first_name', 'last_name', 'about_info')
+
+
+admin.site.register(UserProfile, CustomUserProfile)
 admin.site.register(Star, CustomStar)
 admin.site.register(Comment, CustomComment)
 admin.site.register(Link, CustomLink)

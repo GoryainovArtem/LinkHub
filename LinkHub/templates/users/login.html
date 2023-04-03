@@ -24,6 +24,9 @@
             {% endfor %}
           {% endif %}
           <form method="post"
+            {% if action_url %}
+              action="{% url action_url %}"
+            {% endif %}
           >
             {% csrf_token %}
             {% for field in form %}
@@ -48,17 +51,22 @@
               {% endif %}
             </div>
             {% endfor %}
-          </form>
-          <div class="col-md-6 offset-md-4">
-            <button type="submit" class="btn btn-primary">
-              Войти
-            </button>
-            <button class="btn btn-link">
-              <a href="">
-                Забыли пароль?
-              </a>
-            </button>
+            <div class="col-md-6 offset-md-4">
+              <button type="submit" class="btn btn-primary">
+                Войти
+              </button>
+              <button class="btn btn-link">
+                <a href="">
+                  Забыли пароль?
+                </a>
+              </button>
+              <button class="registration_link btn btn-link">
+                <a href="{%url 'users:signup' %}">
+                  Регистрация
+                </a>
+              </button>
           </div>
+          </form>
         </div>
       </div>
     </div>

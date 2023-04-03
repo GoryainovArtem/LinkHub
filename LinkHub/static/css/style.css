@@ -105,6 +105,15 @@ main {
     brightness(95%) contrast(80%);
 }
 
+.star_img_btn {
+  border: none;
+  background-color: white;
+}
+
+.star_img_btn:focus {
+  outline: none;
+}
+
 .media_inner_container {
   display: flex;
   justify-content: space-between;
@@ -170,4 +179,12 @@ main {
 .option_buttons {
   display: flex;
   justify-content: space-between;
+}
+
+.profile_title {
+  display: flex;
+}
+
+.registration_link {
+  color: green;
 }

@@ -140,4 +140,4 @@ CKEDITOR_CONFIGS = {
 }
 
 LOGIN_URL = 'users:login'
-LOGIN_REDIRECT_URL = 'link:index'
+LOGIN_REDIRECT_URL = 'links:index'

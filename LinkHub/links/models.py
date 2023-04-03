@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Count
 
 User = get_user_model()
 
@@ -27,7 +28,7 @@ class BaseClass(models.Model):
 
 
 class Theme(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField('Название', max_length=100)
 
     class Meta:
         verbose_name = 'Тема'
@@ -67,9 +68,31 @@ class Project(BaseClass):
     class Meta:
         verbose_name = 'Проект'
         verbose_name_plural = 'Проекты'
+        ordering = ('-created',)
+
+
+class StarManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            stars_amount=Count('stars')
+        ).order_by('-stars_amount')
+
+
+class ProxyProjectOrderedDesc(Project):
+    class Meta:
+        proxy = True
+        ordering = ('created',)
+
+
+class ProxyProjectOrderedStars(Project):
+    objects = StarManager()
+
+    class Meta:
+        proxy = True
 
 
 class Head(BaseClass):
+    number = models.IntegerField('номер')
     project = models.ForeignKey(Project,
                                 on_delete=models.CASCADE,
                                 related_name='heads')
@@ -80,6 +103,7 @@ class Head(BaseClass):
 
 
 class Link(BaseClass):
+    number = models.IntegerField('номер')
     url = models.URLField('ссылка')
     head = models.ForeignKey(Head,
                              on_delete=models.CASCADE,
@@ -122,6 +146,32 @@ class Star(models.Model):
         verbose_name = 'Звезда'
         verbose_name_plural = 'Звезды'
 
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User,
+                                on_delete=models.CASCADE
+                                )
+    profile_image = models.ImageField(
+        'Изображение профиля',
+        upload_to='profile_image',
+        blank=True
+    )
+    about_info = models.TextField(
+        'О себе',
+        help_text='Укажите личную информацию о себе',
+        blank=True
+    )
+    first_name = models.CharField('Имя',
+                                  max_length=30,
+                                  help_text='Укажите свое имя',
+                                  blank=True)
+    last_name = models.CharField('Фамилия', max_length=40,
+                                 help_text='Укажите свою фамилию',
+                                 blank=True)
+
+    class Meta:
+        verbose_name = 'Профиль пользователя'
+        verbose_name_plural = 'Профили пользователей'
 
 # class Follow(models.Model):
 #     ...

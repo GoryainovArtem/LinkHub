@@ -4,12 +4,13 @@
  {{ project.title }}
 {% endblock %}
 {% block content %}
+  {% load user_filters %}
   <h1>
     {{ project.title }}
   </h1>
   <ul class="types navbar">
   {% for theme in project.theme.all %}
-    <a class="type_link" href="">
+    <a class="type_link" href="{% url 'links:interest_list' theme.name %}">
       <li class="
       {% if forloop.first %}
       first_direction_type
@@ -31,7 +32,7 @@
         <h5>Команда разработчиков:</h5>
         <ul>
           <li>
-            <a href="{% url 'links:profile' project.main_admin.username %}">{{ project.main_admin.username }} (создатель)</a>
+            <a role="button" href="{% url 'links:profile' project.main_admin.username %}">{{ project.main_admin.username }} (создатель)</a>
           </li>
           {% for editor in project.editor.all %}
             <li>
@@ -42,26 +43,33 @@
     </div>
     <div class="likes" >
         <div class="stars">
-          {% if project.stars.liked == user %}
-            <a href="">
-              <img src="{% static 'image/star.png' %}" width="50" height="50" alt=""
-                  class=""
-              >
-            </a>
+          {% if is_liked %}
+            <form action="{% url 'links:deny_like' project.id %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="name"/>
+               <button class="star_img_btn" type="submit">
+                 <img class="star_img"
+                         width="45" height="45" src="{% static 'image/star.png' %}">
+               </button>
+            </form>
           {% else %}
-            <a href="">
-              <img src="{% static 'image/star.png' %}" width="50" height="50" alt=""
-                  class=""
-              >
-            </a>
+            <form action="{% url 'links:like_project' project.id %}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="name"/>
+               <button class="star_img_btn" type="submit">
+                 <img class=""
+                         width="45" height="45" src="{% static 'image/star.png' %}">
+               </button>
+            </form>
           {% endif %}
           <span class="likes_title">Понравился проект: {{ project.stars.count }} </span>
         </div>
     </div>
   </div>
-  <form class="my-4">
+  <form class="my-4" method="get" action="{% url 'links:project_detailed' project.id %}">
+    {% csrf_token %}
     <div class="search_block">
-      <input class="search_line" type="text" placeholder="Введите название раздела" name="" id="">
+      <input class="search_line" type="text" placeholder="Введите название раздела" name="q">
       <button type="submit" class="btn btn-primary">Искать</button>
     </div>
   </form>
@@ -69,14 +77,14 @@
     <h4>
       Содержание:
     </h4></div>
-    {% for head in project.heads.all %}
+    {% for head in heads %}
     <div class="media mb-4 project_head" style="background-color: #F5F5F5">
       <div class="media-body">
         <div class="media_inner_container" >
           <div class="media_inner_left" >
             <h5 class="mt-0">
               <a href="{% url 'links:head' head.id %}">
-                {{ forloop.counter }}. {{ head.title }}
+                {{ head.number }}. {{ head.title }}
               </a>
             </h5>
             <p>
