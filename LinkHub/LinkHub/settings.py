@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig'
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -141,3 +142,9 @@ CKEDITOR_CONFIGS = {
 
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'links:index'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = ''
+
+
+AUTH_USER_MODEL = 'users.CustomUser'

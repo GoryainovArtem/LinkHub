@@ -4,20 +4,20 @@
   Профиль
 {% endblock %}
 {% block content %}
-  <div class="profile_title">
-    <h2 class="mb-3" >Профиль пользователя {{ profile.username }}:</h2>
-    <a href="{% url 'users:logout' %}"><img src="{% static 'image/exit.png' %}" width="25" height="25"></a>
+  <div class="profile_title mb-3">
+    <h3>Профиль пользователя {{ profile.username }}:</h3>
+    <a href="{% url 'users:logout' %}"><img src="{% static 'image/exit.png' %}" width="30" height="30"></a>
   </div>
   <div class="profile_container">
-    <img src="ava.jpg" height="200" width="170" alt="" />
+    <img src="" height="200" width="170" alt="" />
     <div class="profile_info">
         <div class="info_container">
-            <span><b>О себе: </b></span>
+            <span><b>О себе: </b>{{ profile.about_info }}</span>
             <span><b>Имя: </b>{{ profile.get_full_name }}</span>
-            <span><b>Почта: </b></span>
+            <span><b>Почта: </b>{{ profile.email }}</span>
         </div>
         <div class="option_buttons">
-            <a href="{% url 'links:edit_profile' user.username %}" class="btn btn-primary edit_profile">Редактировать профиль</a>
+            <a href="{% url 'links:edit_profile' user.id %}" class="btn btn-primary edit_profile">Редактировать профиль</a>
             <a class="btn btn-primary edit_profile">Изменить пароль</a>
         </div>
     </div>
@@ -25,14 +25,17 @@
   <div class="mart my-4">
     <h5 class="my-4">Витрина</h5>
     <div class="projects_container">
-        <div class="mart_project">Проект 1</div>
-        <div class="mart_project">Проект 2</div>
-        <div class="mart_project">Проект 3</div>
-    </div>
+        {% for project in mart %}
+          <div class="mart_project">
+              <a href="{% url 'links:project_detailed' project.id %}">
+                {{ project.title }}
+              </a>
+          </div>
+        {% endfor %}
   </div>
   <div class="projects">
-    <h5>Все проекты ({{ profile.created_projects.count }}):</h5>
-    {% for project in profile.created_projects.all %}
+    <h5 class="my-3">Все проекты ({{ projects_amount }}):</h5>
+    {% for project in projects %}
       <div class="media mb-4 project_head" style="background-color: #F5F5F5">
         <div class="media-body">
           <div class="media_inner_container" >

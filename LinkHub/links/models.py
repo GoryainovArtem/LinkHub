@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Max
 
 User = get_user_model()
 
@@ -92,18 +92,37 @@ class ProxyProjectOrderedStars(Project):
 
 
 class Head(BaseClass):
-    number = models.IntegerField('номер')
+    number = models.IntegerField('Номер раздела',
+                                 blank=True, null=True)
     project = models.ForeignKey(Project,
                                 on_delete=models.CASCADE,
                                 related_name='heads')
 
     class Meta:
-        verbose_name = 'Раздел'
-        verbose_name_plural = 'Разделы'
+        unique_together = ('project', 'number')
+        verbose_name = 'раздел'
+        verbose_name_plural = 'разделы'
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if not self.number:
+            buf = self.project.heads.aggregate(max_number=Max('number'))
+            print('Баф',buf)
+            if buf['max_number'] is None:
+                value = 1
+            else:
+                value = buf['max_number'] + 1
+            self.number = value
+            super(Head, self).save()
 
 
 class Link(BaseClass):
-    number = models.IntegerField('номер')
+    number = models.IntegerField(
+        'номер источника', blank=True,
+        null=True,
+        help_text='Укажите номер источника. '
+                  'Параметр необязателен и может быть выставлен автоматически')
     url = models.URLField('ссылка')
     head = models.ForeignKey(Head,
                              on_delete=models.CASCADE,
@@ -112,6 +131,19 @@ class Link(BaseClass):
     class Meta:
         verbose_name = 'Ссылка'
         verbose_name_plural = 'Ссылки'
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        if not self.number:
+            buf = self.head.links.aggregate(max_number=Max('number'))
+            print('Баф',buf)
+            if buf['max_number'] is None:
+                value = 1
+            else:
+                value = buf['max_number'] + 1
+            self.number = value
+            super(Link, self).save()
 
 
 class Comment(models.Model):
@@ -147,31 +179,31 @@ class Star(models.Model):
         verbose_name_plural = 'Звезды'
 
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User,
-                                on_delete=models.CASCADE
-                                )
-    profile_image = models.ImageField(
-        'Изображение профиля',
-        upload_to='profile_image',
-        blank=True
-    )
-    about_info = models.TextField(
-        'О себе',
-        help_text='Укажите личную информацию о себе',
-        blank=True
-    )
-    first_name = models.CharField('Имя',
-                                  max_length=30,
-                                  help_text='Укажите свое имя',
-                                  blank=True)
-    last_name = models.CharField('Фамилия', max_length=40,
-                                 help_text='Укажите свою фамилию',
-                                 blank=True)
-
-    class Meta:
-        verbose_name = 'Профиль пользователя'
-        verbose_name_plural = 'Профили пользователей'
+# class UserProfile(models.Model):
+#     user = models.OneToOneField(User,
+#                                 on_delete=models.CASCADE
+#                                 )
+#     profile_image = models.ImageField(
+#         'Изображение профиля',
+#         upload_to='profile_image',
+#         blank=True
+#     )
+#     about_info = models.TextField(
+#         'О себе',
+#         help_text='Укажите личную информацию о себе',
+#         blank=True
+#     )
+#     first_name = models.CharField('Имя',
+#                                   max_length=30,
+#                                   help_text='Укажите свое имя',
+#                                   blank=True)
+#     last_name = models.CharField('Фамилия', max_length=40,
+#                                  help_text='Укажите свою фамилию',
+#                                  blank=True)
+#
+#     class Meta:
+#         verbose_name = 'Профиль пользователя'
+#         verbose_name_plural = 'Профили пользователей'
 
 # class Follow(models.Model):
 #     ...

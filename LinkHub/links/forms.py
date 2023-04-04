@@ -1,10 +1,12 @@
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
 from .models import Project, Link, Head, Theme, \
     ProxyProjectOrderedDesc, ProxyProjectOrderedStars, \
-    User, UserProfile
+    User
 
+from users.models import CustomUser
 
 class ProjectForm(forms.ModelForm):
 
@@ -38,7 +40,7 @@ class CreateLinkAdminForm(forms.ModelForm):
 
     class Meta:
         model = Link
-        fields = ('title', 'description', 'url', 'head')
+        fields = ('title', 'number', 'description', 'url', 'head')
 
 
 class CreateHeadForm(forms.ModelForm):
@@ -80,19 +82,4 @@ class SortedProjectsType(forms.ModelForm):
     class Meta:
         model = Project
         fields = ('theme', 'type', )
-
-
-class EditProfileForm(forms.ModelForm):
-    about_info = forms.CharField(
-        label='О себе',
-        help_text='Укажите информацию о себе',
-        widget=CKEditorUploadingWidget
-    )
-
-    class Meta:
-        model = UserProfile
-        fields = ('profile_image',
-                  'about_info',
-                  'first_name',
-                  'last_name')
 

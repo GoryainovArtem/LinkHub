@@ -1,14 +1,18 @@
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, DetailView, CreateView, View
+from django.urls import reverse_lazy
+from django.views.generic import ListView, DetailView, CreateView, View, UpdateView
 
 from .color_generator import color_generator
 from .models import Project, Head, Link, Comment, User, Star, \
-    Theme, ProxyProjectOrderedDesc, ProxyProjectOrderedStars, UserProfile
+    Theme, ProxyProjectOrderedDesc, ProxyProjectOrderedStars
 from .forms import ProjectForm, LinkForm, CreateLinkForm, \
-    CreateHeadForm, SearchHeadForm,  SortedProjectsType, \
-    EditProfileForm
+    CreateHeadForm, SearchHeadForm,  SortedProjectsType
+
+from users.models import CustomUser
+from users.forms import EditProfileForm
 
 
 class Index(ListView):
@@ -163,14 +167,36 @@ def create_link(request):
     return render(request, template, context)
 
 
-def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    print('1 шаг')
-    user = get_object_or_404(UserProfile, user=user)
-    print('Найден')
+class Profile(DetailView):
+    MART_ELEMENTS_AMOUNT = 3
+    model = CustomUser
+    template_name = 'links/profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        search_criterions = Q(main_admin=user) | Q(editor=user)
+        context['mart'] = ProxyProjectOrderedStars.objects.filter(
+            search_criterions)[:MART_ELEMENTS_AMOUNT]
+        projects_amount = user.created_projects.count() + user.projects_edit.count()
+
+    def get_queryset(self):
+        return
+
+
+
+def profile(request, id):
+    MART_ELEMENTS_AMOUNT = 3
+    user = get_object_or_404(User, id=id)
     template = 'links/profile.html'
+    search_criterions = Q(main_admin=user) | Q(editor=user)
+    mart = ProxyProjectOrderedStars.objects.filter(search_criterions)[:MART_ELEMENTS_AMOUNT]
+    projects = Project.objects.filter(search_criterions)
+    projects_amount = user.created_projects.count() + user.projects_edit.count()
     context = {
-        'profile': user
+        'profile': user,
+        'mart': mart,
+        'projects_amount': projects_amount,
+        'projects': projects
     }
     return render(request, template, context)
 
@@ -186,37 +212,15 @@ def interest(request, interest):
     return render(request, template, context)
 
 
-def test(request):
-    template = 'links/test_page.html'
-    if request.method == 'GET':
-        if request.resolver_match.view_name != 'links:test':
-            print('Обнуляем')
-            request.session = None
-        else:
-            lst = request.session.get('types', None)
-    else:
-        if 'types' in request.session:
-            request.session['types'].append(request.POST.get('type'))
-            request.session.modified = True
-        else:
-            request.session['types'] = [request.POST.get('type')]
-    print('Список сессии:',  request.session.get('types', None))
-    form = SortedProjectsType()
-    type_value = request.GET.get('type')
-    print('Тип:', type_value)
-    context = {
-        'form': form,
-        'type': type_value
-    }
-    return render(request, template, context)
+class EditProfile(UpdateView):
+    model = CustomUser
+    form_class = EditProfileForm
+    template_name = 'links/edit_profile.html'
+    pk_url_kwarg = 'id'
 
+    def get_success_url(self):
+        print('Такой пользователь:',
+              self.object)
+        return reverse_lazy('links:profile', args=(self.object.id, ))
 
-def edit_profile(request, username):
-    user = get_object_or_404(UserProfile, user__username=username)
-    template = 'links/edit_profile.html'
-    form = EditProfileForm()
-    context = {
-        'form': form
-    }
-    return redirect('links:profile', username=username)
 

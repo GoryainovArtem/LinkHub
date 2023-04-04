@@ -32,11 +32,11 @@
         <h5>Команда разработчиков:</h5>
         <ul>
           <li>
-            <a role="button" href="{% url 'links:profile' project.main_admin.username %}">{{ project.main_admin.username }} (создатель)</a>
+            <a role="button" href="{% url 'links:profile' project.main_admin.id %}">{{ project.main_admin.username }} (создатель)</a>
           </li>
           {% for editor in project.editor.all %}
             <li>
-              <a href="{% url 'links:profile' editor.username %}">{{ editor.username }}</a>
+              <a href="{% url 'links:profile' editor.id %}">{{ editor.username }}</a>
             </li>
           {% endfor %}
         </ul>
