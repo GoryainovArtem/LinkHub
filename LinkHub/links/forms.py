@@ -8,6 +8,7 @@ from .models import Project, Link, Head, Theme, \
 
 from users.models import CustomUser
 
+
 class ProjectForm(forms.ModelForm):
 
     class Meta:

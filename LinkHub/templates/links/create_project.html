@@ -26,7 +26,7 @@
             </div>
           {% endfor %}
         {% endif %}
-        <form action="" method="post">
+        <form action="{% url 'links:create_project' %}" method="post">
           {% csrf_token %}
           {% for field in form %}
           <div class="my-3"
@@ -50,9 +50,6 @@
             {% endif %}
           </div>
           {% endfor %}
-          <span>Не нашли нужную тему?</span>
-          <input class="text"/>
-          <button>Добавить</button>
           <div class="col-md-6 offset-md-4">
             <button type="submit" class="btn btn-primary">
               Создать проект

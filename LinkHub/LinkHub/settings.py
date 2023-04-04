@@ -41,7 +41,9 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'ckeditor',
     'ckeditor_uploader',
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'social_django',
+    'sorl.thumbnail'
 ]
 
 
@@ -71,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends'
             ],
         },
     },
@@ -144,7 +147,15 @@ LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'links:index'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = ''
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+AUTHENTICATION_BACKENDS = [
+    'social_core.backends.vk.VKOAuth2',
+    'django.contrib.auth.backends.ModelBackend'
+]
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = ''
+SOCIAL_AUTH_VK_OAUTH2_SECRET = ''

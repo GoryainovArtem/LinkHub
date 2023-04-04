@@ -16,8 +16,8 @@ class CustomUserAdmin(UserAdmin):
                     'email', 'about_info',
                     'profile_image']
     list_editable = ('first_name', 'last_name',
-                     'email', 'about_info',
-                     'profile_image')
+                     'email', 'profile_image',
+                     'about_info', 'profile_image')
 
 
 admin.site.register(CustomUser, CustomUserAdmin)

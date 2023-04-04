@@ -5,7 +5,7 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     profile_image = models.ImageField('Изображение профиля',
-                                      upload_to='profiles',
+                                      upload_to='profiles/',
                                       blank=True, null=True)
     first_name = models.CharField('Имя', max_length=30,
                                   blank=True, null=True

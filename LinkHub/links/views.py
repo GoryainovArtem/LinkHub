@@ -65,19 +65,31 @@ class DetailedProject(DetailView):
         return context
 
 
-def create_project(request):
-    template = 'links/create_project.html'
-    form = ProjectForm(request.POST or None)
-    context = {
-        'form': form
-    }
-    return render(request, template, context=context)
+class CreateProject(CreateView):
+    model = Project
+    template_name = 'links/create_project.html'
+    form_class = ProjectForm
+
+    def form_valid(self, form):
+        form.instance.main_admin = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('links:project_detailed', kwargs={'id': self.object.id})
 
 
 class RecentProjects(ListView):
+    RECENTLY_EDIT_PROJECTS_AMOUNT = 5
     model = Project
     template_name = 'links/recent.html'
     context_object_name = 'projects'
+
+    def get_queryset(self):
+        user = self.request.user
+        criterions = Q(main_admin=user) | Q(editor=user)
+        return Project.objects.filter(
+            criterions
+        ).order_by('-last_edit')[:self.RECENTLY_EDIT_PROJECTS_AMOUNT]
 
 
 class LikeProject(View):
@@ -167,26 +179,24 @@ def create_link(request):
     return render(request, template, context)
 
 
-class Profile(DetailView):
-    MART_ELEMENTS_AMOUNT = 3
-    model = CustomUser
-    template_name = 'links/profile.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data()
-        search_criterions = Q(main_admin=user) | Q(editor=user)
-        context['mart'] = ProxyProjectOrderedStars.objects.filter(
-            search_criterions)[:MART_ELEMENTS_AMOUNT]
-        projects_amount = user.created_projects.count() + user.projects_edit.count()
-
-    def get_queryset(self):
-        return
-
-
+# class Profile(DetailView):
+#     MART_ELEMENTS_AMOUNT = 3
+#     model = CustomUser
+#     template_name = 'links/profile.html'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data()
+#         search_criterions = Q(main_admin=user) | Q(editor=user)
+#         context['mart'] = ProxyProjectOrderedStars.objects.filter(
+#             search_criterions)[:MART_ELEMENTS_AMOUNT]
+#         projects_amount = user.created_projects.count() + user.projects_edit.count()
+#
+#     def get_queryset(self):
+#         return
 
 def profile(request, id):
     MART_ELEMENTS_AMOUNT = 3
-    user = get_object_or_404(User, id=id)
+    user = get_object_or_404(CustomUser, id=id)
     template = 'links/profile.html'
     search_criterions = Q(main_admin=user) | Q(editor=user)
     mart = ProxyProjectOrderedStars.objects.filter(search_criterions)[:MART_ELEMENTS_AMOUNT]
@@ -222,5 +232,6 @@ class EditProfile(UpdateView):
         print('Такой пользователь:',
               self.object)
         return reverse_lazy('links:profile', args=(self.object.id, ))
+
 
 

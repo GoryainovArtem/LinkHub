@@ -4,27 +4,34 @@
   Профиль
 {% endblock %}
 {% block content %}
-  <div class="profile_title mb-3">
+  {% load thumbnail %}
+  <div class="title_wrapper mb-3">
     <h3>Профиль пользователя {{ profile.username }}:</h3>
-    <a href="{% url 'users:logout' %}"><img src="{% static 'image/exit.png' %}" width="30" height="30"></a>
+    {% if user == profile %}
+      <a href="{% url 'users:logout' %}"><img src="{% static 'image/exit.png' %}" width="30" height="30"></a>
+    {% endif %}
   </div>
-  <div class="profile_container">
-    <img src="" height="200" width="170" alt="" />
-    <div class="profile_info">
+  <div class="profile_container row">
+    {% thumbnail profile.profile_image "200x170" as im %}
+      <img width="170" class="img-fluid user_img col" height="200" src="{{ im.url }}" alt="" />
+    {% endthumbnail %}
+    <div class="profile_info col">
         <div class="info_container">
             <span><b>О себе: </b>{{ profile.about_info }}</span>
             <span><b>Имя: </b>{{ profile.get_full_name }}</span>
             <span><b>Почта: </b>{{ profile.email }}</span>
         </div>
-        <div class="option_buttons">
-            <a href="{% url 'links:edit_profile' user.id %}" class="btn btn-primary edit_profile">Редактировать профиль</a>
-            <a class="btn btn-primary edit_profile">Изменить пароль</a>
-        </div>
     </div>
   </div>
+  {% if user == profile %}
+  <div class="my-3 d-flex justify-content-end row">
+    <a class="btn btn-primary edit_btn" href="">Изменить пароль</a>
+    <a class="btn btn-primary edit_btn" href="{% url 'links:edit_profile' user.id %}">Редактировать профиль</a>
+  </div>
+  {% endif %}
   <div class="mart my-4">
     <h5 class="my-4">Витрина</h5>
-    <div class="projects_container">
+    <div class="projects_container row">
         {% for project in mart %}
           <div class="mart_project">
               <a href="{% url 'links:project_detailed' project.id %}">
