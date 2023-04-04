@@ -114,7 +114,7 @@ class Head(BaseClass):
             else:
                 value = buf['max_number'] + 1
             self.number = value
-            super(Head, self).save()
+        super(Head, self).save()
 
 
 class Link(BaseClass):
@@ -143,7 +143,7 @@ class Link(BaseClass):
             else:
                 value = buf['max_number'] + 1
             self.number = value
-            super(Link, self).save()
+        super(Link, self).save()
 
 
 class Comment(models.Model):

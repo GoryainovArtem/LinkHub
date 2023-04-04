@@ -84,3 +84,9 @@ class SortedProjectsType(forms.ModelForm):
         model = Project
         fields = ('theme', 'type', )
 
+
+class EditProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ('title', 'description',)
+

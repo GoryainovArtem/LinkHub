@@ -5,9 +5,12 @@
 {% endblock %}
 {% block content %}
   {% load user_filters %}
-  <h1>
-    {{ project.title }}
-  </h1>
+  <div class="title_wrapper mb-3">
+    <h3>{{ project.title }}</h3>
+    {% if user == project.main_admin or user in project.editor.all %}
+      <a href="{% url 'links:edit_project' project.id %}"><img src="{% static 'image/edit.png' %}" width="30" height="30"></a>
+    {% endif %}
+  </div>
   <ul class="types navbar">
   {% for theme in project.theme.all %}
     <a class="type_link" href="{% url 'links:interest_list' theme.name %}">
@@ -102,4 +105,7 @@
       </div>
     </div>
     {% endfor %}
+    {% if user == project.admin or user in project.editor.all %}
+      <a href="" class="btn btn-primary">Добавить раздел</a>
+    {% endif %}
 {% endblock %}

@@ -12,12 +12,14 @@ urlpatterns = [
     path('projects/<int:project_id>/like/', views.LikeProject.as_view(), name='like_project'),
     path('projects/<int:project_id>/dislike/', views.deny_like, name='deny_like'),
     path('create-head', views.create_head, name='create_head'),
-    path('heads/<int:head_id>/', views.head, name='head'),
+    path('heads/<int:id>/', views.head, name='head'),
     path('heads/<int:head_id>/edit/', views.head_edit, name='head_edit'),
     path('links/<int:link_id>/', views.link, name='link'),
-    path('links/<int:link_id>/edit/', views.link_edit, name='link_edit'),
+    path('links/<int:id>/edit/', views.LinkEdit.as_view(), name='link_edit'),
     path('create-link/', views.create_link, name='create_link'),
     path('profile/<int:id>/', views.profile, name='profile'),
     path('projects/<str:interest>/', views.interest, name='interest_list'),
-    path('users/<int:id>/edit_profile/', views.EditProfile.as_view(), name='edit_profile')
+    path('users/<int:id>/edit_profile/', views.EditProfile.as_view(), name='edit_profile'),
+    path('projects/<int:id>/edit/', views.ProjectEdit.as_view(), name='edit_project'),
+    path('links/<int:id>/delete/', views.LinkDelete.as_view(), name='link_delete')
 ]

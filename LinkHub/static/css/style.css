@@ -114,15 +114,13 @@ main {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background-color: red;
 }
 
 .media_inner_right {
   position: relative;
 }
 
-.edit_link {
-  position: absolute;
+.modify_link {
   right: 0;
 }
 
@@ -234,4 +232,9 @@ main {
 .edit_btn {
   margin: 20px;
   margin: 0 10px 10px 0;
+}
+
+.delete_edit_btns {
+  display: flex;
+  position: absolute;
 }

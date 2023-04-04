@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, View, UpdateView
+from django.views.generic import ListView, DetailView, CreateView, View, UpdateView, DeleteView
 
 from .color_generator import color_generator
 from .models import Project, Head, Link, Comment, User, Star, \
@@ -53,7 +53,6 @@ class DetailedProject(DetailView):
             id=self.kwargs['id'])
 
         if self.request.GET.get('q'):
-            print('Есть запрос q')
             req_str = self.request.GET.get('q')
             context['heads'] = project.heads.filter(description__icontains=req_str)
         else:
@@ -116,9 +115,9 @@ def deny_like(request, project_id):
     return redirect('links:project_detailed', id=project_id)
 
 
-def head(request, head_id):
+def head(request, id):
     template = 'links/heads.html'
-    head = get_object_or_404(Head, id=head_id)
+    head = get_object_or_404(Head, id=id)
     context = {
         'head': head
     }
@@ -153,17 +152,6 @@ def link(request, link_id):
     print('Комменты:', comments)
     context = {
         'comments': comments,
-        'link': link
-    }
-    template = 'links/link_detail.html'
-    return render(request, template, context)
-
-
-def link_edit(request, link_id):
-    link = get_object_or_404(Link, id=link_id)
-    form = LinkForm(request.POST or None, instance=link)
-    context = {
-        'form': form,
         'link': link
     }
     template = 'links/link_detail.html'
@@ -234,4 +222,30 @@ class EditProfile(UpdateView):
         return reverse_lazy('links:profile', args=(self.object.id, ))
 
 
+class ProjectEdit(UpdateView):
+    model = Project
+    form_class = 'links/edit_project.html'
 
+    def get_success_url(self):
+        return reverse_lazy('links:project_detailed',
+                            kwargs={
+                                'id': self.object.id})
+
+
+class LinkDelete(View):
+    def post(self, request, *args, **kwargs):
+        link_id = request.POST.get('id')
+        print(link_id)
+
+
+class LinkEdit(UpdateView):
+    model = Link
+    form_class = LinkForm
+    template_name = 'links/link_edit.html'
+    pk_url_kwarg = 'id'
+
+    def get_success_url(self):
+        print('Делаю изменение ссылки')
+        return reverse_lazy('links:head',
+                            kwargs={
+                                'id': self.object.head.id})

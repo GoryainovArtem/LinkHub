@@ -26,7 +26,7 @@
             </div>
           {% endfor %}
         {% endif %}
-        <form action="" method="post">
+        <form action="{% url 'links:link_edit' link.id %}" method="post">
           {% csrf_token %}
           {% for field in form %}
           <div class="my-3"
