@@ -232,10 +232,17 @@ class ProjectEdit(UpdateView):
                                 'id': self.object.id})
 
 
-class LinkDelete(View):
-    def post(self, request, *args, **kwargs):
-        link_id = request.POST.get('id')
-        print(link_id)
+class LinkDelete(DeleteView):
+    model = Link
+    template_name = 'links/delete_confirm.html'
+    pk_url_kwarg = 'id'
+
+    def get_success_url(self):
+        return reverse_lazy('links:head',
+                            kwargs={
+                                'id': self.object.head.id
+                            }
+                            )
 
 
 class LinkEdit(UpdateView):

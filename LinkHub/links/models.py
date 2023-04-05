@@ -46,7 +46,7 @@ class Project(BaseClass):
                                    verbose_name='Тематика',
                                    related_name='projects',
                                    blank=True, null=True,
-                                   help_text='Выберите тематику проекта')
+                                   help_text='Выберите тематику проекта. Для выбора нескольких значений зажмите Alt.')
     main_admin = models.ForeignKey(User,
                                    on_delete=models.DO_NOTHING,
                                    verbose_name='создатель',
