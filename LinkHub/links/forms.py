@@ -52,7 +52,7 @@ class CreateHeadForm(forms.ModelForm):
 
     class Meta:
         model = Link
-        fields = ('title', 'description')
+        fields = ('number', 'title', 'description')
 
 
 class SearchHeadForm(forms.Form):

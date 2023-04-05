@@ -105,7 +105,7 @@
       </div>
     </div>
     {% endfor %}
-    {% if user == project.admin or user in project.editor.all %}
-      <a href="" class="btn btn-primary">Добавить раздел</a>
+    {% if user == project.main_admin or user in project.editor.all %}
+      <a class="btn btn-primary " href="{% url 'links:create_head' project.id %}">Добавить раздел</a>
     {% endif %}
 {% endblock %}

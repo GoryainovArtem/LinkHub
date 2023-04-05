@@ -124,14 +124,14 @@ def head(request, id):
     return render(request, template, context)
 
 
-def create_head(request):
-    template = 'links/create_head.html'
-    form = CreateHeadForm()
-    context = {
-        'is_editing': False,
-        'form': form
-    }
-    return render(request, template, context)
+# def create_head(request):
+#     template = 'links/create_head.html'
+#     form = CreateHeadForm()
+#     context = {
+#         'is_editing': False,
+#         'form': form
+#     }
+#     return render(request, template, context)
 
 
 def head_edit(request, head_id):
@@ -156,6 +156,29 @@ def link(request, link_id):
     }
     template = 'links/link_detail.html'
     return render(request, template, context)
+
+
+class CreateLink(CreateView):
+    model = Link
+    template_name = 'links/create'
+    pk_url_kwarg = 'id'
+
+
+class CreateHead(CreateView):
+    model = Head
+    template_name = 'links/create_head.html'
+    form_class = CreateHeadForm
+    pk_url_kwarg = 'proj_id'
+
+    def form_valid(self, form):
+        print()
+        form.instance.project = self.object.prog
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        print('id нового раздела:', self.object)
+        return reverse_lazy('links:project_detailed',
+                            kwargs={'id': self.object.id})
 
 
 def create_link(request):
@@ -224,7 +247,14 @@ class EditProfile(UpdateView):
 
 class ProjectEdit(UpdateView):
     model = Project
-    form_class = 'links/edit_project.html'
+    template_name = 'links/create_project.html'
+    form_class = ProjectForm
+    pk_url_kwarg = 'id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['is_editing'] = True
+        return context
 
     def get_success_url(self):
         return reverse_lazy('links:project_detailed',

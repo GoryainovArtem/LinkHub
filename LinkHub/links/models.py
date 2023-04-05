@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Count, Max
 
@@ -123,10 +124,13 @@ class Link(BaseClass):
         null=True,
         help_text='Укажите номер источника. '
                   'Параметр необязателен и может быть выставлен автоматически')
-    url = models.URLField('ссылка')
+    url = models.URLField('ссылка', blank=True, null=True)
     head = models.ForeignKey(Head,
                              on_delete=models.CASCADE,
                              related_name='links')
+
+    document = models.FileField('Документ', blank=True, null=True,
+                                upload_to='Files')
 
     class Meta:
         verbose_name = 'Ссылка'
@@ -135,6 +139,8 @@ class Link(BaseClass):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
+        if not (self.url and self.document and self.description):
+            raise ValidationError('Хотя бы одно из полей: описание, ссылка, документ должно быть заполнено.')
         if not self.number:
             buf = self.head.links.aggregate(max_number=Max('number'))
             print('Баф',buf)

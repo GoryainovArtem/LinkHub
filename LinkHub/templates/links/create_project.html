@@ -1,16 +1,24 @@
 {% extends 'base.html' %}
 {% load user_filters %}
 {% block title %}
-  Создать проект
+  {% if is_editing %}
+    Редактировать описание проекта {{ project.title }}
+  {% else %}
+    Создать проект
+  {% endif %}
 {% endblock %}
 {% block content %}
-<h1>
-  Создание проекта
-</h1>
+<h3>
+  {% if is_editing %}
+    Редактирование проекта "{{ project.title }}"
+  {% else %}
+    Создание проекта
+  {% endif %}
+</h3>
 <div class="row justify-content-center">
   <div class="col-md-8 p-4">
     <div class="card">
-      <div class="card-header">Создать проект</div>
+      <div class="card-header">Проект "{{ project.title }}"</div>
       <div class="card-body">
         {% if form.errors %}
           {% for field in form %}
@@ -26,7 +34,7 @@
             </div>
           {% endfor %}
         {% endif %}
-        <form action="{% url 'links:create_project' %}" method="post">
+        <form method="post">
           {% csrf_token %}
           {% for field in form %}
           <div class="my-3"
@@ -52,7 +60,11 @@
           {% endfor %}
           <div class="col-md-6 offset-md-4">
             <button type="submit" class="btn btn-primary">
-              Создать проект
+              {% if is_editing %}
+                Сохранить изменения
+              {% else %}
+                Создать проект
+              {% endif %}
             </button>
           </div>
         </form>

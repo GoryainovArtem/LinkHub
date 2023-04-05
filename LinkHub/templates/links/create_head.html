@@ -2,17 +2,17 @@
 {% load user_filters %}
 {% block title %}
   {% if is_editing %}
-    Редактирование главы "{{ form.instance.title|truncatechars:10 }}
+    Редактирование раздела "{{ form.instance.title|truncatechars:10 }}
   {% else %}
-    Создание главы
+    Создание раздела
   {% endif %}
 {% endblock %}
 {% block content %}
   <h3>
   {% if is_editing %}
-    Редактирование главы "{{ form.instance.title }}"
+    Редактирование раздела "{{ form.instance.title }}"
   {% else %}
-    Создание новой главы
+    Создание нового раздела
   {% endif %}
   </h3>
   {{ form.media }}
@@ -30,7 +30,7 @@
       </div>
     {% endfor %}
   {% endif %}
-  <form action="" method="post">
+  <form method="post">
     {% csrf_token %}
     {% for field in form %}
     <div class="my-3"
@@ -56,7 +56,11 @@
     {% endfor %}
     <div class="col-md-6 offset-md-4">
       <button type="submit" class="btn btn-primary">
-        Сохранить изменения
+        {% if is_editing %}
+          Сохранить изменения
+        {% else %}
+          Создать новый раздел
+        {% endif %}
       </button>
     </div>
   </form>
