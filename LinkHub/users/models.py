@@ -21,6 +21,11 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
+    def save(self, *args, **kwargs):
+        if not self.profile_image:
+            self.profile_image = 'profiles/default_profile_image.jpg'
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = 'профиль пользователя'
         verbose_name_plural = 'профили пользователей'

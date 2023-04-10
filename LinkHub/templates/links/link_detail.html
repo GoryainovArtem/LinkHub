@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
 {% load user_filters %}
+{% load thumbnail %}
 {% block title %}
   Создать проект
 {% endblock %}
 {% block content %}
 <h3>
-  {{ link.head.project.title }} / {{ link.head.title }} / {{ link.title }}
+    <a class="text-dark" href="{% url 'links:project_detailed' link.head.project.id %}">{{ link.head.project.title }}</a>> / <a class="text-dark " href="{% url 'links:head' link.head.id %}">{{ link.head.title }}</a> / {{ link.title }}
 </h3>
     <span>
       <h6>Описание:</h6>
@@ -17,35 +18,35 @@
         {{ link.url }}
       </a>
     </span>
-    <a href="">
-    Редактировать
-    </a>
 
 <!--Комментарии-->
         <div class="card my-4">
-          <h5 class="card-header">Добавить комментарий</h5>
+          <h5 class="card-header"><a href="">
+              {% thumbnail user.profile_image "360x360" as im %}
+                <img width="80"  height="80" src="{{ im.url }}" alt="" />
+              {% endthumbnail %}
+          </a> <span class="ml-3">Добавить комментарий</span> </h5>
           <div class="card-body">
-            <form method="post" action="">
+            <form method="post" action="{% url 'links:add_comment' link.id %}">
               {% csrf_token %}
+              {{ form.media }}
               <div class="form-group mb-2">
-                11
+                {{ form.text|addclass:"form-control" }}
               </div>
-              <button type=submit class="btn btn-primary">Отправить</button>
+              <button type=submit class="btn btn-primary">Добавить комментарий</button>
             </form>
           </div>
         </div>
       <h4 class="mb-4">Комментарии:</h4>
       {% for comment in comments %}
-        <div class="media mb-4">
-          <div class="media-body">
-            <h5 class="mt-0">
-              <a href="">
-                {{ comment.author.username }}
-              </a>
-            </h5>
-            <p>
-                {{ comment.text }}
-            </p>
+        <div class="card my-4">
+          <h5 class="card-header"><a href="">
+              {% thumbnail comment.author.profile_image "360x360" as im %}
+                <img width="65"  height="65" src="{{ im.url }}" alt="" />
+              {% endthumbnail %}
+          </a> <span class="ml-3">{{ comment.author.username }}</span> </h5>
+          <div class="card-body">
+            {{ comment.text|safe }}
           </div>
         </div>
       {% endfor %}

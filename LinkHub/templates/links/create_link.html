@@ -1,13 +1,18 @@
 {% extends 'base.html' %}
 {% load user_filters %}
 {% block title %}
-  Создать ссылку
+  {% if is_editing %}
+    Редактировать источник "{{ link.title }}"
+  {% else %}
+    Создать источник
+  {% endif %}
 {% endblock %}
 {% block content %}
-  <h1 class="mb-4">Создать новую ссылку</h1>
+  <h3 class="mb-4">{% if is_editing %} Создать новый источник {% else %} Создать новый источник{% endif %}</h3>
   {{ form.media }}
-  <form method="post">
+  <form method="post" action="">
     {% csrf_token %}
+    {{ form.media }}
     {% for field in form %}
       <div class="my-3"
         {% if field.field.required %}
@@ -31,7 +36,7 @@
       </div>
     {% endfor %}
     <button class="btn btn-primary float-end" type="submit">
-      Создать новую ссылку
+      {% if is_editing %}Сохранить изменения{% else %}Создать новый источник{%endif%}
     </button>
   </form>
 {% endblock %}

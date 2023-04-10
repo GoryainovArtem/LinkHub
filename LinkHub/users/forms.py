@@ -33,7 +33,8 @@ class EditProfileForm(forms.ModelForm):
     about_info = forms.CharField(
         label='О себе',
         help_text='Укажите информацию о себе',
-        widget=CKEditorUploadingWidget
+        widget=CKEditorUploadingWidget,
+        required=False
     )
 
     class Meta:

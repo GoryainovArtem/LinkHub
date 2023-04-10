@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
 from .models import Project, Link, Head, Theme, \
     ProxyProjectOrderedDesc, ProxyProjectOrderedStars, \
-    User
+    User, Comment
 
 from users.models import CustomUser
 
@@ -17,12 +17,6 @@ class ProjectForm(forms.ModelForm):
 
 
 class LinkForm(forms.ModelForm):
-    class Meta:
-        model = Link
-        fields = ('title', 'description', 'url')
-
-
-class CreateLinkForm(forms.ModelForm):
     description = forms.CharField(
         label='Описание',
         help_text='Добавьте описание',
@@ -30,7 +24,7 @@ class CreateLinkForm(forms.ModelForm):
 
     class Meta:
         model = Link
-        fields = ('title', 'description', 'url')
+        fields = ('title', 'description', 'url', 'document')
 
 
 class CreateLinkAdminForm(forms.ModelForm):
@@ -89,4 +83,13 @@ class EditProjectForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = ('title', 'description',)
+
+
+class CommentForm(forms.ModelForm):
+    text = forms.CharField(widget=CKEditorUploadingWidget())
+
+    class Meta:
+        model = Comment
+        fields = ('text', )
+
 

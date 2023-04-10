@@ -130,7 +130,8 @@ class Link(BaseClass):
                              related_name='links')
 
     document = models.FileField('Документ', blank=True, null=True,
-                                upload_to='Files')
+                                upload_to='Files',
+                                help_text='Выберите нужный документ')
 
     class Meta:
         verbose_name = 'Ссылка'
@@ -139,7 +140,7 @@ class Link(BaseClass):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        if not (self.url and self.document and self.description):
+        if not (self.url or self.document or self.description):
             raise ValidationError('Хотя бы одно из полей: описание, ссылка, документ должно быть заполнено.')
         if not self.number:
             buf = self.head.links.aggregate(max_number=Max('number'))

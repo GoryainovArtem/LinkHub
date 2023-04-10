@@ -17,7 +17,7 @@
     {% endthumbnail %}
     <div class="profile_info col">
         <div class="info_container">
-            <span><b>О себе: </b>{{ profile.about_info }}</span>
+            <span><b>О себе: </b>{{ profile.about_info|slice:'3:-4'|safe }}</span>
             <span><b>Имя: </b>{{ profile.get_full_name }}</span>
             <span><b>Почта: </b>{{ profile.email }}</span>
         </div>

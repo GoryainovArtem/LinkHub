@@ -9,7 +9,11 @@
     <ul class="nav nav-pills">
       <li class="nav-item">
         <a class="nav-link"
-          href="">Популярное</a>
+          href="">Все проекты</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link"
+          href="">Сохраненные</a>
       </li>
       {% if user.is_authenticated %}
       <li class="nav-item">
@@ -20,13 +24,7 @@
       {% if user.is_authenticated %}
       <li class="nav-item">
         <a class="nav-link"
-          href="{% url 'links:recent_projects' user.username %}">Мои проекты</a>
-      </li>
-      {% endif %}
-      {% if user.is_authenticated %}
-      <li class="nav-item">
-        <a class="nav-link"
-          href="{% url 'links:create_project' %}">Понравившиеся</a>
+          href="{% url 'links:liked_projects' user.id %}">Понравившиеся</a>
       </li>
       {% endif %}
       {% if user.is_authenticated %}

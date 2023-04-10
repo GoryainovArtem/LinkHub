@@ -8,3 +8,6 @@ CKEDITOR.editorConfig = function( config ) {
 	// config.language = 'fr';
 	// config.uiColor = '#AADC6E';
 };
+
+CKEDITOR.config.enterMode = CKEDITOR.ENTER_BR;
+CKEDITOR.config.autoParagraph = false;

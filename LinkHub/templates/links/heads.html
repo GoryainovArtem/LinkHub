@@ -24,7 +24,7 @@
               </a>
             </h6>
             <p>
-              {{ link.description }}
+              {{ link.description|safe|truncatechars:40 }}
             </p>
           </div>
           <div class="media_inner_right" >
@@ -43,7 +43,7 @@
     </div>
   {% endfor %}
   <div class="">
-    <a class="btn btn-primary" href="{% url 'links:create_link' %}">
+    <a class="btn btn-primary" href="{% url 'links:create_link' head.id %}">
      Добавить новый источник
     </a>
   </div>

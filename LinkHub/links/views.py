@@ -8,8 +8,9 @@ from django.views.generic import ListView, DetailView, CreateView, View, UpdateV
 from .color_generator import color_generator
 from .models import Project, Head, Link, Comment, User, Star, \
     Theme, ProxyProjectOrderedDesc, ProxyProjectOrderedStars
-from .forms import ProjectForm, LinkForm, CreateLinkForm, \
-    CreateHeadForm, SearchHeadForm,  SortedProjectsType
+from .forms import ProjectForm, LinkForm, \
+    CreateHeadForm, SearchHeadForm,  SortedProjectsType, \
+    CommentForm
 
 from users.models import CustomUser
 from users.forms import EditProfileForm
@@ -33,11 +34,12 @@ class Index(ListView):
             project_model = Project
         else:
             project_model = self.PROJECTS_LIST_MODEL[type_value]
-        context['projects'] = project_model.objects.all()
+        if self.request.GET.get('theme'):
+            themes = list(map(int, self.request.GET.get('theme')))
+            context['projects'] = project_model.objects.filter(theme__id__in=themes)
+        else:
+            context['projects'] = project_model.objects.all()
         return context
-
-    def get_queryset(self):
-        return Project.objects.all()
 
 
 class DetailedProject(DetailView):
@@ -124,16 +126,6 @@ def head(request, id):
     return render(request, template, context)
 
 
-# def create_head(request):
-#     template = 'links/create_head.html'
-#     form = CreateHeadForm()
-#     context = {
-#         'is_editing': False,
-#         'form': form
-#     }
-#     return render(request, template, context)
-
-
 def head_edit(request, head_id):
     head = get_object_or_404(Head, id=head_id)
     template = 'links/create_head.html'
@@ -146,13 +138,15 @@ def head_edit(request, head_id):
     return render(request, template, context)
 
 
-def link(request, link_id):
-    link = get_object_or_404(Link, id=link_id)
+def link(request, id):
+    link = get_object_or_404(Link, id=id)
     comments = link.comments.select_related('author')
     print('Комменты:', comments)
     context = {
         'comments': comments,
-        'link': link
+        'link': link,
+        'form': CommentForm(),
+        'comments': link.comments.all()
     }
     template = 'links/link_detail.html'
     return render(request, template, context)
@@ -160,8 +154,20 @@ def link(request, link_id):
 
 class CreateLink(CreateView):
     model = Link
-    template_name = 'links/create'
+    template_name = 'links/create_link.html'
+    form_class = LinkForm
     pk_url_kwarg = 'id'
+
+    def form_valid(self, form):
+        print('ВСЕ', self.kwargs)
+        head = get_object_or_404(Head, id=self.kwargs.get('id'))
+        form.instance.head = head
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('links:head',
+                            kwargs={
+                                'id': self.kwargs.get('id')})
 
 
 class CreateHead(CreateView):
@@ -181,13 +187,13 @@ class CreateHead(CreateView):
                             kwargs={'id': self.object.id})
 
 
-def create_link(request):
-    template = 'links/create_link.html'
-    form = CreateLinkForm()
-    context = {
-        'form': form
-    }
-    return render(request, template, context)
+# def create_link(request):
+#     template = 'links/create_link.html'
+#     form = CreateLinkForm()
+#     context = {
+#         'form': form
+#     }
+#     return render(request, template, context)
 
 
 # class Profile(DetailView):
@@ -278,11 +284,39 @@ class LinkDelete(DeleteView):
 class LinkEdit(UpdateView):
     model = Link
     form_class = LinkForm
-    template_name = 'links/link_edit.html'
+    template_name = 'links/create_link.html'
     pk_url_kwarg = 'id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['is_editing'] = True
+        return context
 
     def get_success_url(self):
         print('Делаю изменение ссылки')
         return reverse_lazy('links:head',
                             kwargs={
                                 'id': self.object.head.id})
+
+
+class AddComment(View):
+    def post(self, request, *args, **kwargs):
+        text = request.POST.get('text')
+        user = request.user
+        link = get_object_or_404(Link, id=kwargs['id'])
+        Comment.objects.create(author=user,
+                               text=text,
+                               link=link
+                               )
+
+        return redirect('links:link', id=kwargs['id'])
+
+
+class LikedProjects(ListView):
+    template_name = 'links/recent.html'
+    model = Star
+    context_object_name = 'projects'
+
+    def get_queryset(self):
+        print('Проекты:',  Star.objects.filter(liked=self.request.user))
+        return Project.objects.filter(stars__liked=self.request.user)
