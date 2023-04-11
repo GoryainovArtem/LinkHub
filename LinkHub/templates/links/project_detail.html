@@ -66,6 +66,18 @@
             </form>
           {% endif %}
           <span class="likes_title">Понравился проект: {{ project.stars.count }} </span>
+          <div>
+            <form action="{% if is_saved %}
+                            {% url 'saved:delete_session' project.id %}
+                          {% else %}
+                            {% url 'saved:add_session' project.id %}
+                          {% endif %}
+                         " method="post">
+              {% csrf_token %}
+              <input type='hidden'>
+              <button type="submit" type="submit" class="btn {% if is_saved %}btn-secondary{% else %}btn-primary{% endif %}">Добавить в сохраненное</button>
+            </form>
+          </div>
         </div>
     </div>
   </div>

@@ -13,18 +13,12 @@
       </li>
       <li class="nav-item">
         <a class="nav-link"
-          href="">Сохраненные</a>
+          href="{% url 'links:saved_projects' %}">Сохраненные</a>
       </li>
       {% if user.is_authenticated %}
       <li class="nav-item">
         <a class="nav-link"
           href="{% url 'links:recent_projects' user.username %}">Недавние</a>
-      </li>
-      {% endif %}
-      {% if user.is_authenticated %}
-      <li class="nav-item">
-        <a class="nav-link"
-          href="{% url 'links:liked_projects' user.id %}">Понравившиеся</a>
       </li>
       {% endif %}
       {% if user.is_authenticated %}

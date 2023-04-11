@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'users.apps.UsersConfig',
     'social_django',
-    'sorl.thumbnail'
+    'sorl.thumbnail',
+    'saved.apps.SavedConfig',
 ]
 
 

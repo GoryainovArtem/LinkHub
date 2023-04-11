@@ -62,6 +62,7 @@ class DetailedProject(DetailView):
         context['is_liked'] = project.stars.filter(
             liked=self.request.user
         ).exists()
+        context['is_saved'] = self.kwargs['id'] in self.request.session['saved']
         context['form'] = SearchHeadForm()
         return context
 
@@ -320,3 +321,20 @@ class LikedProjects(ListView):
     def get_queryset(self):
         print('Проекты:',  Star.objects.filter(liked=self.request.user))
         return Project.objects.filter(stars__liked=self.request.user)
+
+
+class SavedProjects(ListView):
+    template_name = 'links/recent.html'
+    model = Project
+    context_object_name = 'projects'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data()
+        context['have_content'] = self.request.session.get('saved')
+        context['page_title'] = 'Сохраненные'
+        return context
+
+    def get_queryset(self):
+        if self.request.session.get('saved'):
+            saved_list = self.request.session.get('saved')
+            return Project.objects.filter(id__in=saved_list)

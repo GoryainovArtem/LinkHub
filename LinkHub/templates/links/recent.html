@@ -1,12 +1,18 @@
 {% extends 'base.html' %}
 {% block title %}
-  Недавние
+  {{ page_title }}
 {% endblock %}
 {% block content %}
   <h1>
-    Недавние
+    {{ page_title }}
   </h1>
-  {% for project in projects %}
-    {% include 'includes/card.html' %}
-  {% endfor %}
+  {% if have_content %}
+    {% for project in projects %}
+      {% include 'includes/card.html' %}
+    {% endfor %}
+  {% else %}
+    <div>
+      <span>Еще нет сохраненных проектов</span>
+    </div>
+  {% endif %}
 {% endblock %}

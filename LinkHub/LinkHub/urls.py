@@ -23,7 +23,8 @@ urlpatterns = [
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('auth/', include('users.urls', namespace='users')),
     path('auth/', include('django.contrib.auth.urls')),
-    path('', include('links.urls', namespace='links'))
+    path('', include('links.urls', namespace='links')),
+    path('', include('saved.urls', namespace='saved'))
 ]
 
 if settings.DEBUG:
