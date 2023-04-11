@@ -1,8 +1,13 @@
+import logging
+import pandas as pd
+
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, View, UpdateView, DeleteView
 
 from .color_generator import color_generator
@@ -49,6 +54,31 @@ class DetailedProject(DetailView):
     context_object_name = 'project'
 
     def get_context_data(self, **kwargs):
+        # visited: {'page': [date, date, ...]}
+        logging.basicConfig(
+            level=logging.DEBUG,
+            filename=f'logs/pages/{self.request.user.id}.log',
+            format='%(asctime)s, %(levelname)s, %(name)s, %(message)s'
+        )
+        logging.debug(self.kwargs['id'])
+        # print('Сессия', self.request.session['visited'])
+        # print(type(self.kwargs['id']))
+        # print(self.request.session['visited'].get(self.kwargs['id']))
+        # if not self.request.session.get('visited'):
+        #     self.request.session['visited'] = {}
+        #     print('Создал словарь')
+        # if not self.request.session['visited'].get(self.kwargs['id']):
+        #     print('la')
+        #     self.request.session['visited'][self.kwargs['id']] = []
+        #     print('создал список')
+        #     self.request.session.modified = True
+        # else:
+        #     print('не задаем список')
+        # self.request.session['visited'][self.kwargs['id']].append(1)
+        # self.request.session.modified = True
+        # print(self.request.session['visited'])
+        # print(len(self.request.session['visited'][self.kwargs['id']]))
+
         context = super().get_context_data()
         project = get_object_or_404(
             Project,
@@ -59,10 +89,12 @@ class DetailedProject(DetailView):
             context['heads'] = project.heads.filter(description__icontains=req_str)
         else:
             context['heads'] = project.heads.all()
-        context['is_liked'] = project.stars.filter(
-            liked=self.request.user
-        ).exists()
-        context['is_saved'] = self.kwargs['id'] in self.request.session['saved']
+        if self.request.user.is_authenticated:
+            context['is_liked'] = project.stars.filter(
+                liked=self.request.user
+            ).exists()
+        if self.request.session.get('saved'):
+            context['is_saved'] = self.kwargs['id'] in self.request.session['saved']
         context['form'] = SearchHeadForm()
         return context
 
@@ -338,3 +370,94 @@ class SavedProjects(ListView):
         if self.request.session.get('saved'):
             saved_list = self.request.session.get('saved')
             return Project.objects.filter(id__in=saved_list)
+
+
+class Feed(ListView):
+    model = Project
+    template_name = 'links/recent.html'
+    page_kwarg = 'id'
+
+    def get_queryset(self):
+        import re
+        links = Link.objects.filter(head__project__id__in=[1, 3])
+        has_image = list(links.values_list('description', flat=True))
+
+        def closure(pattern):
+            def wrapper(s):
+                search_result = re.findall(pattern, s)
+                return bool(search_result)
+            return wrapper
+
+
+        image_pattern = r'<img'
+        video_pattern = r'<iframe'
+        find_image = closure(image_pattern)
+        find_youtube_video = closure(video_pattern)
+
+        has_image_list = []
+        for i in has_image:
+            has_image_list.append(find_image(i))
+        if sum(has_image_list) >= len(has_image_list) / 2:
+            print('da')
+
+
+        # projects_created_list = Project.objects.filter(
+        #     Q(main_admin=self.request.user) | Q(editor=self.request.user)
+        # ).values_list('head', flat=True)
+        #
+        #
+        # # Мои проекты
+        # projects_created_list = Project.objects.filter(
+        #     Q(main_admin=self.request.user) | Q(editor=self.request.user)
+        # ).values_list('theme', flat=True)
+        #
+        #
+        # def find_most_appear_themes(lst):
+        #     data = list(map(lambda x: (x, lst.count(x)), set(lst)))
+        #     data.sort(key=lambda x: x[1])
+        #     return list(map(lambda x: x[0], data))[:3]
+        #
+        # themes_list = find_most_appear_themes(lst)
+        #
+        # def add_coefficients(lst):
+        #     my_project_coef = 3
+        #     coefs_list = [my_project_coef] * len(lst)
+        #     return list(zip(lst, coefs_list))
+        #
+        # themes_list = add_coefficients(themes_list)
+        #
+        # # Оцененные
+        # liked_projects = Project.objects.filter(stars__liked=self.request.user).values_list('theme', flat=True)
+        #
+        # # Сохраненные
+        # saved_projects = self.request.session['saved']
+        #
+        #
+        # # Просмотренные страницы
+        # import re
+        # with open('D:/Dev/LinkHub/LinkHub/logs/pages/2.log') as file:
+        #     pattern = r'., DEBUG,'
+        #     data = [line.strip('\n') for line in file.readlines()]
+        #     data = [line for line in data if re.search(pattern, line)]
+        #     print(*data, sep='\n')
+        #     data = list(map(lambda x: x.split(', '), data))
+        #
+        # tags = Project.objects.values_list('theme', flat=True)
+        # tags = list(tags)
+        #
+        # def add_coefficients(my_projects_list, liked_projects_list,
+        #                      saved_projects_list, watched_project_list):
+        #     my_project_coef = 3
+        #     liked_project_coef = 1.5
+        #     saved_project_coef = 1
+        #     watched_project_coef = 0.75
+        #     my_project_coefs_list = [my_project_coef] * len(my_projects_list)
+        #     liked_project_coefs_list = [liked_project_coef] * len(liked_projects_list)
+        #     saved_project_coefs_list = [saved_project_coef] * len(saved_projects_list)
+        #     watched_project_coefs_list = [watched_project_coef] * len(watched_project_list)
+        #     return (list(zip(my_projects_list, my_project_coefs_list)) +
+        #             list(zip(liked_projects_list, liked_project_coefs_list)) +
+        #             list(zip(saved_projects_list, saved_project_coefs_list)) +
+        #             list(zip(watched_project_list, watched_project_coefs_list)))
+
+
