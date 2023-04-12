@@ -376,6 +376,12 @@ class Feed(ListView):
     model = Project
     template_name = 'links/recent.html'
     page_kwarg = 'id'
+    context_object_name = 'projects'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        content = super().get_context_data()
+        content['have_content'] = True
+        return content
 
     def get_queryset(self):
         #  -- Мои проекты --
@@ -391,6 +397,7 @@ class Feed(ListView):
         )
 
         created_themes_list = my_projects.values_list('theme', flat=True)
+        print('Созданные темы:', list(created_themes_list))
 
         # Темы
         def find_most_appear_themes(lst):
@@ -398,7 +405,7 @@ class Feed(ListView):
             data.sort(key=lambda x: x[1])
             return list(map(lambda x: x[0], data))[:3]
 
-        themes_list = find_most_appear_themes(created_themes_list)
+        themes_list = find_most_appear_themes(list(created_themes_list))
 
         # def add_coefficients(lst):
         #     my_project_coef = 3
@@ -458,7 +465,7 @@ class Feed(ListView):
 
         # Темы
         saved_themes_list = liked_projects.values_list('theme', flat=True)
-        saved_themes_list = find_most_appear_themes(saved_themes_list)
+        saved_themes_list = find_most_appear_themes(list(saved_themes_list))
 
         # Для изображения
         #links = Link.objects.filter(id__in=liked_projects.values_list('id', flat=True))
@@ -528,8 +535,10 @@ class Feed(ListView):
 
         def count_rating(project):
             project.theme.all()
-            return sum(tags_coefficients[theme] for theme in project.theme.all())
+            return sum(tags_coefficients[theme.id] for theme in project.theme.all())
 
-        random_projects = list(map(count_rating, random_projects))
-        return sorted(random_projects)
+        print('Коэффициенты:', tags_coefficients)
+        random_projects.sort(key=count_rating)
+        print('Итоговые проекты:', random_projects)
+        return random_projects
 
