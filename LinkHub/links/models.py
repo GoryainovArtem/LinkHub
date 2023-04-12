@@ -186,6 +186,7 @@ class Star(models.Model):
         verbose_name_plural = 'Звезды'
 
 
+
 # class UserProfile(models.Model):
 #     user = models.OneToOneField(User,
 #                                 on_delete=models.CASCADE

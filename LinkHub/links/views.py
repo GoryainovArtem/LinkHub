@@ -3,7 +3,7 @@ import pandas as pd
 
 
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -378,61 +378,110 @@ class Feed(ListView):
     page_kwarg = 'id'
 
     def get_queryset(self):
-        import re
-        links = Link.objects.filter(head__project__id__in=[1, 3])
-        has_image = list(links.values_list('description', flat=True))
+        #  -- Мои проекты --
+        # Темы
+        # Есть ли картинки у большинства постов
+        # Есть ли видео у большинства постов
+        # Сколько источников
+        # Есть ли ссылка
+        # Есть ли документ
 
-        def closure(pattern):
-            def wrapper(s):
-                search_result = re.findall(pattern, s)
-                return bool(search_result)
-            return wrapper
+        my_projects = Project.objects.filter(
+            Q(main_admin=self.request.user) | Q(editor=self.request.user)
+        )
 
+        created_themes_list = my_projects.values_list('theme', flat=True)
 
-        image_pattern = r'<img'
-        video_pattern = r'<iframe'
-        find_image = closure(image_pattern)
-        find_youtube_video = closure(video_pattern)
+        # Темы
+        def find_most_appear_themes(lst):
+            data = list(map(lambda x: (x, lst.count(x)), set(lst)))
+            data.sort(key=lambda x: x[1])
+            return list(map(lambda x: x[0], data))[:3]
 
-        has_image_list = []
-        for i in has_image:
-            has_image_list.append(find_image(i))
-        if sum(has_image_list) >= len(has_image_list) / 2:
-            print('da')
+        themes_list = find_most_appear_themes(created_themes_list)
 
-
-        # projects_created_list = Project.objects.filter(
-        #     Q(main_admin=self.request.user) | Q(editor=self.request.user)
-        # ).values_list('head', flat=True)
-        #
-        #
-        # # Мои проекты
-        # projects_created_list = Project.objects.filter(
-        #     Q(main_admin=self.request.user) | Q(editor=self.request.user)
-        # ).values_list('theme', flat=True)
-        #
-        #
-        # def find_most_appear_themes(lst):
-        #     data = list(map(lambda x: (x, lst.count(x)), set(lst)))
-        #     data.sort(key=lambda x: x[1])
-        #     return list(map(lambda x: x[0], data))[:3]
-        #
-        # themes_list = find_most_appear_themes(lst)
-        #
         # def add_coefficients(lst):
         #     my_project_coef = 3
         #     coefs_list = [my_project_coef] * len(lst)
         #     return list(zip(lst, coefs_list))
-        #
+
+        #themes_list = add_coefficients(themes_list)
+
+        # Картинки и видео
+        # import re
+        # links = Link.objects.filter(head__project__id__in=my_projects.values_list('id', flat=True))
+        # has_image = list(links.values_list('description', flat=True))
+
+        # def closure(pattern):
+        #     def wrapper(s):
+        #         search_result = re.findall(pattern, s)
+        #         return bool(search_result)
+        #     return wrapper
+
+        # image_pattern = r'<img'
+        # video_pattern = r'<iframe'
+        # find_image = closure(image_pattern)
+        # find_youtube_video = closure(video_pattern)
+
+        # Для изображения
+        # has_image_list = [find_image(i) for i in has_image]
+        # if sum(has_image_list) >= len(has_image_list) / 2:
+        #     print('da')
+        # #
+        # # # Для видео
+        # has_video_list = []
+        # for i in has_image:
+        #     has_video_list.append(find_youtube_video(i))
+        # if sum(has_video_list) >= len(has_video_list) / 2:
+        #     print('da')
+
+        # Источники
+        #links_amount = [project.heads.aggregate(Count('links')) for project in my_projects ]
+        #print(links_amount)
+
+        # есть ссылка?
+        #links.values_list('url', flat=True)
+
+        # есть документ?
+        #links.values_list('document', flat=True)
+
+        # def add_coefficients(lst):
+        #     my_project_coef = 3
+        #     coefs_list = [my_project_coef] * len(lst)
+        #     return list(zip(lst, coefs_list))
+
         # themes_list = add_coefficients(themes_list)
-        #
+
+
         # # Оцененные
-        # liked_projects = Project.objects.filter(stars__liked=self.request.user).values_list('theme', flat=True)
-        #
-        # # Сохраненные
-        # saved_projects = self.request.session['saved']
-        #
-        #
+        liked_projects = Project.objects.filter(stars__liked=self.request.user)
+
+        # Темы
+        saved_themes_list = liked_projects.values_list('theme', flat=True)
+        saved_themes_list = find_most_appear_themes(saved_themes_list)
+
+        # Для изображения
+        #links = Link.objects.filter(id__in=liked_projects.values_list('id', flat=True))
+        #links.values_list('description')
+
+        # Для видео
+
+        # Источники
+
+        # Есть ссылка?
+
+        # Есть документ?
+
+
+        ## Сохраненные
+        # saved_projects_id = self.request.session['saved']
+        # saved_projects = Project.objects.filter(id__in=saved_projects_id)
+
+
+        ## Темы
+        #saved_projects.values_list('theme', flat=True)
+
+
         # # Просмотренные страницы
         # import re
         # with open('D:/Dev/LinkHub/LinkHub/logs/pages/2.log') as file:
@@ -444,20 +493,43 @@ class Feed(ListView):
         #
         # tags = Project.objects.values_list('theme', flat=True)
         # tags = list(tags)
-        #
-        # def add_coefficients(my_projects_list, liked_projects_list,
-        #                      saved_projects_list, watched_project_list):
-        #     my_project_coef = 3
-        #     liked_project_coef = 1.5
-        #     saved_project_coef = 1
-        #     watched_project_coef = 0.75
-        #     my_project_coefs_list = [my_project_coef] * len(my_projects_list)
-        #     liked_project_coefs_list = [liked_project_coef] * len(liked_projects_list)
-        #     saved_project_coefs_list = [saved_project_coef] * len(saved_projects_list)
-        #     watched_project_coefs_list = [watched_project_coef] * len(watched_project_list)
-        #     return (list(zip(my_projects_list, my_project_coefs_list)) +
-        #             list(zip(liked_projects_list, liked_project_coefs_list)) +
-        #             list(zip(saved_projects_list, saved_project_coefs_list)) +
-        #             list(zip(watched_project_list, watched_project_coefs_list)))
 
+
+        def add_coefficients(my_projects_list, liked_projects_list,
+                             saved_projects_list, watched_project_list):
+            my_project_coef = 3
+            liked_project_coef = 1.5
+            saved_project_coef = 1
+            watched_project_coef = 0.75
+            my_project_coefs_list = [my_project_coef] * len(my_projects_list)
+            liked_project_coefs_list = [liked_project_coef] * len(liked_projects_list)
+            saved_project_coefs_list = [saved_project_coef] * len(saved_projects_list)
+            watched_project_coefs_list = [watched_project_coef] * len(watched_project_list)
+            return (list(zip(my_projects_list, my_project_coefs_list)) +
+                    list(zip(liked_projects_list, liked_project_coefs_list)) +
+                    list(zip(saved_projects_list, saved_project_coefs_list)) +
+                    list(zip(watched_project_list, watched_project_coefs_list)))
+
+        themes_with_coefs = add_coefficients(created_themes_list,
+                                             saved_themes_list,
+                                             [],
+                                             []
+                                             )
+        tags_coefficients = {}
+        for i in themes_with_coefs:
+            tags_coefficients.setdefault(i[0], 0)
+            tags_coefficients[i[0]] += i[1]
+        print(tags_coefficients)
+
+
+        from random import sample
+
+        random_projects = sample(list(Project.objects.all()), 2)
+
+        def count_rating(project):
+            project.theme.all()
+            return sum(tags_coefficients[theme] for theme in project.theme.all())
+
+        random_projects = list(map(count_rating, random_projects))
+        return sorted(random_projects)
 
