@@ -405,42 +405,36 @@ class Feed(ListView):
             data.sort(key=lambda x: x[1])
             return list(map(lambda x: x[0], data))[:3]
 
-        themes_list = find_most_appear_themes(list(created_themes_list))
-
-        # def add_coefficients(lst):
-        #     my_project_coef = 3
-        #     coefs_list = [my_project_coef] * len(lst)
-        #     return list(zip(lst, coefs_list))
-
-        #themes_list = add_coefficients(themes_list)
+        my_themes_list = find_most_appear_themes(list(created_themes_list))
 
         # Картинки и видео
-        # import re
-        # links = Link.objects.filter(head__project__id__in=my_projects.values_list('id', flat=True))
-        # has_image = list(links.values_list('description', flat=True))
+        import re
+        links = Link.objects.filter(head__project__id__in=my_projects.values_list('id', flat=True))
+        created_links_list = list(links.values_list('description', flat=True))
 
-        # def closure(pattern):
-        #     def wrapper(s):
-        #         search_result = re.findall(pattern, s)
-        #         return bool(search_result)
-        #     return wrapper
+        def closure(pattern):
+            def wrapper(s):
+                search_result = re.findall(pattern, s)
+                return bool(search_result)
+            return wrapper
 
-        # image_pattern = r'<img'
-        # video_pattern = r'<iframe'
-        # find_image = closure(image_pattern)
-        # find_youtube_video = closure(video_pattern)
+        image_pattern = r'<img'
+        video_pattern = r'<iframe'
+        find_image = closure(image_pattern)
+        find_youtube_video = closure(video_pattern)
 
         # Для изображения
-        # has_image_list = [find_image(i) for i in has_image]
-        # if sum(has_image_list) >= len(has_image_list) / 2:
-        #     print('da')
-        # #
-        # # # Для видео
-        # has_video_list = []
-        # for i in has_image:
-        #     has_video_list.append(find_youtube_video(i))
-        # if sum(has_video_list) >= len(has_video_list) / 2:
-        #     print('da')
+        def image_in_half(lst):
+            has_image_list = [find_image(i) for i in lst]
+            return sum(has_image_list) >= len(has_image_list) / 2
+
+        # # Для видео
+        def video_in_half(lst):
+            has_video_list = [find_youtube_video(link) for link in lst]
+            return sum(has_video_list) >= len(has_video_list) / 2
+
+        created_image_flag = image_in_half(created_links_list)
+        created_video_flag = video_in_half(created_links_list)
 
         # Источники
         #links_amount = [project.heads.aggregate(Count('links')) for project in my_projects ]
@@ -452,24 +446,22 @@ class Feed(ListView):
         # есть документ?
         #links.values_list('document', flat=True)
 
-        # def add_coefficients(lst):
-        #     my_project_coef = 3
-        #     coefs_list = [my_project_coef] * len(lst)
-        #     return list(zip(lst, coefs_list))
-
-        # themes_list = add_coefficients(themes_list)
-
 
         # # Оцененные
         liked_projects = Project.objects.filter(stars__liked=self.request.user)
 
         # Темы
-        saved_themes_list = liked_projects.values_list('theme', flat=True)
-        saved_themes_list = find_most_appear_themes(list(saved_themes_list))
+        liked_themes_list = liked_projects.values_list('theme', flat=True)
+        liked_themes_list = find_most_appear_themes(list(liked_themes_list))
 
         # Для изображения
-        #links = Link.objects.filter(id__in=liked_projects.values_list('id', flat=True))
-        #links.values_list('description')
+        links = Link.objects.filter(head__project__id__in=liked_projects.values_list('id', flat=True))
+        liked_links_list = list(links.values_list('description', flat=True))
+        print('Оцененные ссылки', liked_links_list, sep='\n')
+
+        liked_image_flag = image_in_half(liked_links_list)
+        liked_video_flag = video_in_half(liked_links_list)
+
 
         # Для видео
 
@@ -481,25 +473,74 @@ class Feed(ListView):
 
 
         ## Сохраненные
-        # saved_projects_id = self.request.session['saved']
-        # saved_projects = Project.objects.filter(id__in=saved_projects_id)
+        if not self.request.session.get('saved'):
+            saved_themes_list = []
+            saved_image_flag = False
+            saved_video_flag = False
+        else:
+            saved_projects_id = self.request.session['saved']
+            saved_projects = Project.objects.filter(id__in=saved_projects_id)
 
 
-        ## Темы
-        #saved_projects.values_list('theme', flat=True)
+            ## Темы
+            saved_themes_list = saved_projects.values_list('theme', flat=True)
+            saved_themes_list = find_most_appear_themes(list(saved_themes_list))
 
+            # Изображение и видео
+            links = Link.objects.filter(id__in=saved_projects_id)
+            saved_links_list = links.values_list('description', flat=True)
+
+            saved_image_flag = image_in_half(saved_links_list)
+            saved_video_flag = video_in_half(saved_links_list)
 
         # # Просмотренные страницы
-        # import re
-        # with open('D:/Dev/LinkHub/LinkHub/logs/pages/2.log') as file:
-        #     pattern = r'., DEBUG,'
-        #     data = [line.strip('\n') for line in file.readlines()]
-        #     data = [line for line in data if re.search(pattern, line)]
-        #     print(*data, sep='\n')
-        #     data = list(map(lambda x: x.split(', '), data))
-        #
-        # tags = Project.objects.values_list('theme', flat=True)
-        # tags = list(tags)
+        import re
+        import pandas as pd
+        with open('D:/Dev/LinkHub/LinkHub/logs/pages/2.log') as file:
+            pattern = r'., DEBUG,'
+            data = [line.strip('\n') for line in file.readlines()]
+            data = [line for line in data if re.search(pattern, line)]
+            print(*data, sep='\n')
+
+            data = list(map(lambda x: x.split(', '), data))
+            data = [i for i in data if i[2] == 'root']
+            df = pd.DataFrame(data, columns=['date', 'level', 'user', 'project_id'])
+            res = df.groupby(by='project_id').date.count().nlargest(2)
+            watched_projects_ids = list(map(int, res.keys()))
+
+        watched_list = Project.objects.filter(id__in=watched_projects_ids)
+        watched_themes_list = watched_list.values_list('theme', flat=True)
+        watched_themes_list = find_most_appear_themes(list(watched_themes_list))
+
+        links = Link.objects.filter(id__in=watched_projects_ids)
+        watched_links_list = links.values_list('description', flat=True)
+
+        watched_image_flag = image_in_half(watched_links_list)
+        watched_video_flag = video_in_half(watched_links_list)
+
+
+        def count_coef(flag_values, coefs):
+            return sum(flag * coef for flag, coef in zip(flag_values, coefs))
+
+
+        image_flags = (created_image_flag, liked_image_flag,  saved_image_flag,
+                       watched_image_flag)
+        IMAGE_COEFFICIENTS = (1.75, 1.25, 0.8, 0.5)
+
+        image_coef = count_coef(image_flags, IMAGE_COEFFICIENTS)
+
+
+        video_flags = (created_video_flag, liked_video_flag,  saved_video_flag,
+                       watched_video_flag)
+        VIDEO_COEFFICIENTS = (1.75, 1.25, 0.8, 0.5)
+
+        video_coef = count_coef(video_flags, VIDEO_COEFFICIENTS)
+
+
+
+
+
+
 
 
         def add_coefficients(my_projects_list, liked_projects_list,
@@ -518,9 +559,9 @@ class Feed(ListView):
                     list(zip(watched_project_list, watched_project_coefs_list)))
 
         themes_with_coefs = add_coefficients(created_themes_list,
+                                             liked_themes_list,
                                              saved_themes_list,
-                                             [],
-                                             []
+                                             watched_themes_list
                                              )
         tags_coefficients = {}
         for i in themes_with_coefs:
@@ -534,11 +575,17 @@ class Feed(ListView):
         random_projects = sample(list(Project.objects.all()), 2)
 
         def count_rating(project):
-            project.theme.all()
-            return sum(tags_coefficients[theme.id] for theme in project.theme.all())
+            themes_coefs = sum(tags_coefficients[theme.id] for theme in project.theme.all())
+            print('Флаги картинок', image_flags)
+            links = Link.objects.filter(id__in=saved_projects_id)
+            links_list = links.values_list('description', flat=True)
+
+            image_flag = image_in_half(links_list)
+            video_flag = video_in_half(links_list)
+            return themes_coefs + image_flag * image_coef + video_flag * video_coef
 
         print('Коэффициенты:', tags_coefficients)
-        random_projects.sort(key=count_rating)
+        random_projects.sort(key=count_rating, reverse=True)
         print('Итоговые проекты:', random_projects)
         return random_projects
 
