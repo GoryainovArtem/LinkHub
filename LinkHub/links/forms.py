@@ -93,3 +93,14 @@ class CommentForm(forms.ModelForm):
         fields = ('text', )
 
 
+class GiveEditorRoleForm(forms.Form):
+
+    # title = forms.ModelChoiceField(
+    #     queryset=Project.objects.filter(main_admin=self.main_admin),
+    #     label='Проект',
+    #     help_text='Выберите проект, в котором хотите выдать '
+    #               'роль "Редактор" данному пользователю.')
+    class Meta:
+        model = Project
+        fields = ('id', )
+

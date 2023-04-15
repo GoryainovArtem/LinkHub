@@ -4,6 +4,7 @@ import pandas as pd
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
+from django import forms
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -15,7 +16,7 @@ from .models import Project, Head, Link, Comment, User, Star, \
     Theme, ProxyProjectOrderedDesc, ProxyProjectOrderedStars
 from .forms import ProjectForm, LinkForm, \
     CreateHeadForm, SearchHeadForm,  SortedProjectsType, \
-    CommentForm
+    CommentForm, GiveEditorRoleForm
 
 from users.models import CustomUser
 from users.forms import EditProfileForm
@@ -35,12 +36,16 @@ class Index(ListView):
         context = super().get_context_data()
         context['form'] = SortedProjectsType()
         type_value = self.request.GET.get('type')
-        if not type_value:
+        if type_value is None:
             project_model = Project
         else:
             project_model = self.PROJECTS_LIST_MODEL[type_value]
         if self.request.GET.get('theme'):
             themes = list(map(int, self.request.GET.get('theme')))
+            # from operator import and_
+            # from functools import reduce
+            # Q_list = [Q(theme=i) for i in themes]
+            # project_model.objects.filter(reduce(and_, [Q(tags__name='holiday'), Q(tags__name='summer')]))
             context['projects'] = project_model.objects.filter(theme__id__in=themes)
         else:
             context['projects'] = project_model.objects.all()
@@ -127,27 +132,27 @@ class RecentProjects(ListView):
 
 
 class LikeProject(View):
+    """Поставить проекту отметку 'Мне нравится'"""
 
     def post(self, request, *args, **kwargs):
-        project_id = kwargs['project_id']
         user = self.request.user
-        project = get_object_or_404(Project, id=project_id)
+        project = get_object_or_404(Project, id=kwargs['id'])
         Star.objects.get_or_create(
             project=project,
             liked=user
         )
-        return redirect('links:project_detailed', id=project_id)
+        return redirect('links:project_detailed', id=kwargs['id'])
 
 
-def deny_like(request, project_id):
-    print('Дизлайк')
-    star = get_object_or_404(
-        Star,
-        project=project_id,
-        liked = request.user
-    )
-    star.delete()
-    return redirect('links:project_detailed', id=project_id)
+class DenyLike(View):
+    """Убрать у проекта отметку 'Мне нравится'"""
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        project = get_object_or_404(Project, id=kwargs['id'])
+        star = Star.objects.get(liked=user, project=project)
+        star.delete()
+        return redirect('links:project_detailed', id=kwargs['id'])
 
 
 def head(request, id):
@@ -229,36 +234,25 @@ class CreateHead(CreateView):
 #     return render(request, template, context)
 
 
-# class Profile(DetailView):
-#     MART_ELEMENTS_AMOUNT = 3
-#     model = CustomUser
-#     template_name = 'links/profile.html'
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data()
-#         search_criterions = Q(main_admin=user) | Q(editor=user)
-#         context['mart'] = ProxyProjectOrderedStars.objects.filter(
-#             search_criterions)[:MART_ELEMENTS_AMOUNT]
-#         projects_amount = user.created_projects.count() + user.projects_edit.count()
-#
-#     def get_queryset(self):
-#         return
-
-def profile(request, id):
+class Profile(DetailView):
     MART_ELEMENTS_AMOUNT = 3
-    user = get_object_or_404(CustomUser, id=id)
-    template = 'links/profile.html'
-    search_criterions = Q(main_admin=user) | Q(editor=user)
-    mart = ProxyProjectOrderedStars.objects.filter(search_criterions)[:MART_ELEMENTS_AMOUNT]
-    projects = Project.objects.filter(search_criterions)
-    projects_amount = user.created_projects.count() + user.projects_edit.count()
-    context = {
-        'profile': user,
-        'mart': mart,
-        'projects_amount': projects_amount,
-        'projects': projects
-    }
-    return render(request, template, context)
+    model = CustomUser
+    template_name = 'links/profile.html'
+    pk_url_kwarg = 'id'
+    context_object_name = 'profile'
+
+    def get_context_data(self, **kwargs):
+        user = get_object_or_404(CustomUser, id=self.kwargs['id'])
+        search_criterions = Q(main_admin=user) | Q(editor=user)
+        context = super().get_context_data()
+        context['mart'] = ProxyProjectOrderedStars.objects.filter(
+            search_criterions)[:self.MART_ELEMENTS_AMOUNT]
+        context['projects_amount'] = (user.created_projects.count() +
+                                      user.projects_edit.count()
+                                      )
+        context['is_editor'] = self.request.user.created_projects.filter(editor=user)
+        context['projects'] = ProxyProjectOrderedStars.objects.filter(search_criterions)
+        return context
 
 
 def interest(request, interest):
@@ -437,10 +431,18 @@ class Feed(ListView):
         created_video_flag = video_in_half(created_links_list)
 
         # Источники
-        #links_amount = [project.heads.aggregate(Count('links')) for project in my_projects ]
-        #print(links_amount)
+        links_amount = [project.heads.aggregate(Count('links')) for project in my_projects ]
+        print(links_amount)
+
+        def links_amount_feature(lst):
+            links_amount = [project.heads.aggregate(Count('links')) for project in my_projects ]
+            return sum(links_amount) / len(links_amount)
 
         # есть ссылка?
+        created_links_list = list(links.values_list('url', flat=True))
+        def url_in_half(lst):
+            has_video_list = [find_youtube_video(link) for link in lst]
+            return sum(has_video_list) >= len(has_video_list) / 2
         #links.values_list('url', flat=True)
 
         # есть документ?
@@ -462,8 +464,6 @@ class Feed(ListView):
         liked_image_flag = image_in_half(liked_links_list)
         liked_video_flag = video_in_half(liked_links_list)
 
-
-        # Для видео
 
         # Источники
 
@@ -492,6 +492,9 @@ class Feed(ListView):
 
             saved_image_flag = image_in_half(saved_links_list)
             saved_video_flag = video_in_half(saved_links_list)
+
+            # Авторы
+            # Star.objects.filter(liked=user).values_list('project', flat=True) <- id проектов, которые лайкнул пользователь
 
         # # Просмотренные страницы
         import re
@@ -588,4 +591,65 @@ class Feed(ListView):
         random_projects.sort(key=count_rating, reverse=True)
         print('Итоговые проекты:', random_projects)
         return random_projects
+
+
+class GiveEditorRole(View):
+    """Назначить пользователя редактором проекта"""
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        template = 'links/give_editor_role.html'
+        editor = get_object_or_404(CustomUser, id=kwargs['editor_id'])
+        form = GiveEditorRoleForm()
+        form.fields['id'] = forms.ModelChoiceField(
+            queryset=Project.objects.filter(main_admin=user),
+            label='Проект',
+            help_text='Выберите проект, в котором хотите выдать '
+                      'роль "Редактор" данному пользователю.'
+        )
+        context = {
+            'editor': editor,
+            'form': form,
+            'label_text': 'Добавить'
+        }
+        return render(request, template, context)
+
+    def post(self, request, *args, **kwargs):
+        project = get_object_or_404(Project,
+                                    id=int(request.POST.get('id'))
+                                    )
+        editor = get_object_or_404(CustomUser, id=kwargs['editor_id'])
+
+        project.editor.add(editor)
+        project.save()
+        return redirect('links:profile', id=kwargs['editor_id'])
+
+
+class DenyEditorRole(View):
+    """Снять с пользователя роль редактора проекта"""
+    def get(self, request, *args, **kwargs):
+        editor = get_object_or_404(CustomUser, id=kwargs['editor_id'])
+        template = 'links/give_editor_role.html'
+        form = GiveEditorRoleForm()
+        form.fields['id'] = forms.ModelChoiceField(
+            queryset=Project.objects.filter(main_admin=request.user, editor=editor),
+            label='Проект',
+            help_text='Выберите проект, в котором хотите убрать '
+                      'роль "Редактор" у данного пользователя.'
+        )
+        context = {
+            'editor': editor,
+            'form': form,
+            'label_text': 'Убрать'
+        }
+        return render(request, template, context)
+
+    def post(self, request, *args, **kwargs):
+        project = get_object_or_404(Project, id=request.POST.get('id'))
+        editor = get_object_or_404(CustomUser, id=kwargs['editor_id'])
+        project.editor.remove(editor)
+        project.save()
+        return redirect('links:profile', kwargs['editor_id'])
+
+
 

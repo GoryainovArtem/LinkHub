@@ -23,12 +23,26 @@
         </div>
     </div>
   </div>
-  {% if user == profile %}
-  <div class="my-3 d-flex justify-content-end row">
-    <a class="btn btn-primary edit_btn" href="">Изменить пароль</a>
-    <a class="btn btn-primary edit_btn" href="{% url 'links:edit_profile' user.id %}">Редактировать профиль</a>
+  <div class="d-flex align-items-end flex-column bd-highlight mb-3">
+    <div class="d-flex">
+      {% if profile != user %}
+        <div class="bd-highlight">
+          <a class="btn btn-primary edit_btn" href="{% url 'links:give_editor_role' editor_id=profile.id %}">Сделать редактором проекта</a>
+        </div>
+        {% if is_editor %}
+          <div class="bd-highlight">
+            <a class="btn btn-primary edit_btn" href="{% url 'links:deny_editor_role' editor_id=profile.id %}">Убрать роль редактора</a>
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+    {% if user == profile %}
+      <div class="bd-highlight">
+        <a class="btn btn-primary edit_btn" href="">Изменить пароль</a>
+        <a class="btn btn-primary edit_btn" href="{% url 'links:edit_profile' user.id %}">Редактировать профиль</a>
+      </div>
+    {% endif %}
   </div>
-  {% endif %}
   <div class="mart my-4">
     <h5 class="my-4">Витрина</h5>
     <div class="projects_container row">
@@ -39,6 +53,7 @@
               </a>
           </div>
         {% endfor %}
+    </div>
   </div>
   <div class="projects">
     <h5 class="my-3">Все проекты ({{ projects_amount }}):</h5>

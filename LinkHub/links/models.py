@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Count, Max
 
+from users.models import CustomUser
+
 User = get_user_model()
 
 # class Destination(models.Model):
@@ -56,7 +58,8 @@ class Project(BaseClass):
     editor = models.ManyToManyField(User,
                                     verbose_name='Редакторы',
                                     related_name='projects_edit',
-                                    blank=True, null=True)
+                                    blank=True, null=True,
+                                    through='UserProjectStatistics')
 
     is_private = models.BooleanField('Тип проекта', default=False,
                                      choices=ACCESS_TYPES,
@@ -65,6 +68,15 @@ class Project(BaseClass):
                                                'private - доступен для всех пользователей')
     is_group_project = models.BooleanField('Кто может работать с проектом', default=False,
                                            choices=GROUP_TYPES)
+
+    source_amount = models.IntegerField(default=0)
+    links_percentage = models.FloatField(default=0)
+    image_percentage = models.FloatField(default=0)
+    video_percentage = models.FloatField(default=0)
+    document_percentage = models.FloatField(default=0)
+    text_percentage = models.FloatField(default=0)
+    stars_amount = models.FloatField(default=0)
+
 
     class Meta:
         verbose_name = 'Проект'
@@ -184,6 +196,15 @@ class Star(models.Model):
     class Meta:
         verbose_name = 'Звезда'
         verbose_name_plural = 'Звезды'
+
+
+class UserProjectStatistics(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='user_statistics')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_statistics')
+    is_created_project = models.BooleanField(),
+    is_liked_project = models.BooleanField(),
+    is_saved_project = models.BooleanField(),
+    views_amount = models.IntegerField()
 
 
 

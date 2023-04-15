@@ -92,17 +92,19 @@ import re
 # find_youtube_video = closure(video_pattern)
 
 # # Просмотренные страницы
-import re
-import pandas as pd
-with open('D:/Dev/LinkHub/LinkHub/logs/pages/2.log') as file:
-    pattern = r'., DEBUG,'
-    data = [line.strip('\n') for line in file.readlines()]
-    data = [line for line in data if re.search(pattern, line)]
-    print(*data, sep='\n')
+# import re
+# import pandas as pd
+# with open('D:/Dev/LinkHub/LinkHub/logs/pages/2.log') as file:
+#     pattern = r'., DEBUG,'
+#     data = [line.strip('\n') for line in file.readlines()]
+#     data = [line for line in data if re.search(pattern, line)]
+#     print(*data, sep='\n')
+#
+#     data = list(map(lambda x: x.split(', '), data))
+#     data = [i for i in data if i[2] == 'root']
+#     df = pd.DataFrame(data, columns=['date', 'level', 'user', 'project_id'])
+#     res = df.groupby(by='project_id').date.count().nlargest(2)
+#     watched_projects_ids = list(map(int, res.keys()))
 
-    data = list(map(lambda x: x.split(', '), data))
-    data = [i for i in data if i[2] == 'root']
-    df = pd.DataFrame(data, columns=['date', 'level', 'user', 'project_id'])
-    res = df.groupby(by='project_id').date.count().nlargest(2)
-    watched_projects_ids = list(map(int, res.keys()))
+
 
