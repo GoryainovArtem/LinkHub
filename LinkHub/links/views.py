@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, View, UpdateView, DeleteView
 
 from .color_generator import color_generator
-from .models import Project, Head, Link, Comment, User, Star, \
+from .models import Project, Head, Link, Comment, Star, \
     Theme, ProxyProjectOrderedDesc, ProxyProjectOrderedStars
 from .forms import ProjectForm, LinkForm, \
     CreateHeadForm, SearchHeadForm,  SortedProjectsType, \

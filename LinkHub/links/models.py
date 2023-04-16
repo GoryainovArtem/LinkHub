@@ -5,7 +5,7 @@ from django.db.models import Count, Max
 
 from users.models import CustomUser
 
-User = get_user_model()
+#User = get_user_model()
 
 # class Destination(models.Model):
 #     name
@@ -50,16 +50,15 @@ class Project(BaseClass):
                                    related_name='projects',
                                    blank=True, null=True,
                                    help_text='Выберите тематику проекта. Для выбора нескольких значений зажмите Alt.')
-    main_admin = models.ForeignKey(User,
+    main_admin = models.ForeignKey(CustomUser,
                                    on_delete=models.DO_NOTHING,
                                    verbose_name='создатель',
                                    related_name='created_projects'
                                    )
-    editor = models.ManyToManyField(User,
+    editor = models.ManyToManyField(CustomUser,
                                     verbose_name='Редакторы',
                                     related_name='projects_edit',
-                                    blank=True, null=True,
-                                    through='UserProjectStatistics')
+                                    blank=True, null=True)
 
     is_private = models.BooleanField('Тип проекта', default=False,
                                      choices=ACCESS_TYPES,
@@ -75,8 +74,7 @@ class Project(BaseClass):
     video_percentage = models.FloatField(default=0)
     document_percentage = models.FloatField(default=0)
     text_percentage = models.FloatField(default=0)
-    stars_amount = models.FloatField(default=0)
-
+    stars_amount = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = 'Проект'
@@ -169,7 +167,7 @@ class Comment(models.Model):
     DISPLAY_TEXT_LETTERS_AMOUNT = 15
     text = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User,
+    author = models.ForeignKey(CustomUser,
                                on_delete=models.CASCADE,
                                related_name='comments')
     link = models.ForeignKey(Link,
@@ -189,7 +187,7 @@ class Star(models.Model):
     project = models.ForeignKey(Project,
                                 on_delete=models.CASCADE,
                                 related_name='stars')
-    liked = models.ForeignKey(User,
+    liked = models.ForeignKey(CustomUser,
                               on_delete=models.CASCADE,
                               related_name='stars')
 
@@ -199,40 +197,17 @@ class Star(models.Model):
 
 
 class UserProjectStatistics(models.Model):
+    choice_values = ((True, 'Да'), (False, 'Нет'))
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='user_statistics')
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_statistics')
-    is_created_project = models.BooleanField(),
-    is_liked_project = models.BooleanField(),
-    is_saved_project = models.BooleanField(),
-    views_amount = models.IntegerField()
+    is_created_project = models.BooleanField('Проект создан этим автором?', default=False,
+                                             choices=choice_values)
+    is_liked_project = models.BooleanField('Пользователь поставил звезду проекту?', default=False,
+                                           choices=choice_values)
+    is_saved_project = models.BooleanField('Пользователь добавил проект в закладки', default=False,
+                                           choices=choice_values)
+    views_amount = models.IntegerField('Количество просмотров проекта', default=0)
 
-
-
-# class UserProfile(models.Model):
-#     user = models.OneToOneField(User,
-#                                 on_delete=models.CASCADE
-#                                 )
-#     profile_image = models.ImageField(
-#         'Изображение профиля',
-#         upload_to='profile_image',
-#         blank=True
-#     )
-#     about_info = models.TextField(
-#         'О себе',
-#         help_text='Укажите личную информацию о себе',
-#         blank=True
-#     )
-#     first_name = models.CharField('Имя',
-#                                   max_length=30,
-#                                   help_text='Укажите свое имя',
-#                                   blank=True)
-#     last_name = models.CharField('Фамилия', max_length=40,
-#                                  help_text='Укажите свою фамилию',
-#                                  blank=True)
-#
-#     class Meta:
-#         verbose_name = 'Профиль пользователя'
-#         verbose_name_plural = 'Профили пользователей'
-
-# class Follow(models.Model):
-#     ...
+    class Meta:
+        verbose_name = 'Статистика пользователя'
+        verbose_name_plural = 'Статистика пользователей'

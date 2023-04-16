@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
 from .models import Project, Link, Head, Theme, \
     ProxyProjectOrderedDesc, ProxyProjectOrderedStars, \
-    User, Comment
+    Comment
 
 from users.models import CustomUser
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Project, Theme, Head, Link, Comment, Star
+from .models import Project, Theme, Head, Link, Comment, Star, UserProjectStatistics
 from .forms import CreateLinkAdminForm
 
 
@@ -21,7 +21,7 @@ class CustomTheme(admin.ModelAdmin):
 
 
 class CustomLink(admin.ModelAdmin):
-    list_display = ('id', 'title', 'number', 'description', 'url', 'head')
+    list_display = ('id', 'title', 'number', 'description', 'url', 'document', 'head')
     list_editable = ('title', 'title', 'number', 'description', 'url')
     form = CreateLinkAdminForm
 
@@ -35,6 +35,16 @@ class CustomStar(admin.ModelAdmin):
     list_display = ('id', 'project', 'liked')
 
 
+class CustomUserProjectStatistics(admin.ModelAdmin):
+    list_display = ('id', 'views_amount', 'is_created_project', 'is_liked_project',
+                    'is_saved_project')
+    list_editable = ('views_amount', 'is_created_project', 'is_liked_project',
+                     'is_saved_project')
+
+
+admin.site.register(UserProjectStatistics,
+                    CustomUserProjectStatistics
+                    )
 admin.site.register(Star, CustomStar)
 admin.site.register(Comment, CustomComment)
 admin.site.register(Link, CustomLink)
