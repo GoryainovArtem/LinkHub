@@ -108,50 +108,52 @@ import re
 
 
 
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
+#
+#
+# html = """
+# dhdhdhdhd ahahahhaha nete net<img alt="" src="https://mobimg.b-cdn.net/v3/fetch/b5/b59cb84829d07b33035b671f69184a61.jpeg" style="height:125px; width:200px" />&nbsp;ВОООООТ хыч хыч ваномас&nbsp;&nbsp;<img alt="" src="https://mobimg.b-cdn.net/v3/fetch/a2/a253c5869732a1cbabf74443e1467efd.jpeg?w=1470&amp;r=0.5625" style="height:394px; width:700px" />&nbsp;рята тта<br />
+# <br />
+# афупфп а
+# <p><br />
+# &nbsp;</p>
+#
+# <table border="1" cellpadding="1" cellspacing="1" style="width:500px">
+# 	<tbody>
+# 		<tr>
+# 			<td>hfg</td>
+# 			<td>h</td>
+# 		</tr>
+# 		<tr>
+# 			<td>hh</td>
+# 			<td>h</td>
+# 		</tr>
+# 		<tr>
+# 			<td>h</td>
+# 			<td>h</td>
+# 		</tr>
+# 	</tbody>
+# </table>
+#
+# <p><br />
+# &nbsp;</p>
+#
+# <blockquote>
+# <p>,gfhgfh fjfg j f&nbsp; fj fjfjfjfj<br />
+# hfghh</p>
+# </blockquote>
+# <br />
+# <iframe frameborder="0" height="360" src="https://www.youtube.com/embed/umRGf1CMhxs?start=0" width="640"></iframe>
+# """
+# soup = BeautifulSoup(html, features="html.parser")
+#
+# # get text
+# text = soup.get_text()
+# res = ''.join(text.split())
+#
+# print(res)
 
+lst = [1,2,3, None, 4, None, 5]
 
-html = """
-dhdhdhdhd ahahahhaha nete net<img alt="" src="https://mobimg.b-cdn.net/v3/fetch/b5/b59cb84829d07b33035b671f69184a61.jpeg" style="height:125px; width:200px" />&nbsp;ВОООООТ хыч хыч ваномас&nbsp;&nbsp;<img alt="" src="https://mobimg.b-cdn.net/v3/fetch/a2/a253c5869732a1cbabf74443e1467efd.jpeg?w=1470&amp;r=0.5625" style="height:394px; width:700px" />&nbsp;рята тта<br />
-<br />
-афупфп а
-<p><br />
-&nbsp;</p>
-
-<table border="1" cellpadding="1" cellspacing="1" style="width:500px">
-	<tbody>
-		<tr>
-			<td>hfg</td>
-			<td>h</td>
-		</tr>
-		<tr>
-			<td>hh</td>
-			<td>h</td>
-		</tr>
-		<tr>
-			<td>h</td>
-			<td>h</td>
-		</tr>
-	</tbody>
-</table>
-
-<p><br />
-&nbsp;</p>
-
-<blockquote>
-<p>,gfhgfh fjfg j f&nbsp; fj fjfjfjfj<br />
-hfghh</p>
-</blockquote>
-<br />
-<iframe frameborder="0" height="360" src="https://www.youtube.com/embed/umRGf1CMhxs?start=0" width="640"></iframe>
-"""
-soup = BeautifulSoup(html, features="html.parser")
-
-# get text
-text = soup.get_text()
-res = ''.join(text.split())
-
-print(res)
-
-
-
+lst.remove(None)
+print(lst)

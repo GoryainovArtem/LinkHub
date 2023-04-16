@@ -58,7 +58,8 @@ class Project(BaseClass):
     editor = models.ManyToManyField(CustomUser,
                                     verbose_name='Редакторы',
                                     related_name='projects_edit',
-                                    blank=True, null=True)
+                                    blank=True, null=True,
+                                    )
 
     is_private = models.BooleanField('Тип проекта', default=False,
                                      choices=ACCESS_TYPES,

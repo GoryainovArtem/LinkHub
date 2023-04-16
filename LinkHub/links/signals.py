@@ -1,12 +1,12 @@
 import re
 from bs4 import BeautifulSoup
 
-from django.db.models import Max, Sum
+from django.db.models import Max, Sum, Q
 from django.dispatch import receiver
-from django.db.models.signals import pre_delete, post_save, post_delete, pre_save
+from django.db.models.signals import pre_delete, post_save, post_delete, pre_save, m2m_changed
 from django.forms import model_to_dict
 
-from .models import Head, Project, Link, UserProjectStatistics
+from .models import Head, Project, Link, UserProjectStatistics, Star
 from users.models import CustomUser
 
 
@@ -56,24 +56,74 @@ def count_video_percentage(lst):
 
 
 @receiver(signal=post_save, sender=Project)
-def create_user_project_statics(**kwargs):
-    print(kwargs)
-    project = kwargs['instance']
-    user = project.main_admin
-    UserProjectStatistics.objects.create(project=project, user=user,
-                                         is_created_project=True)
+def create_user_project_statics(sender, instance, created, **kwargs):
+    if created:
+        user = instance.main_admin
+        UserProjectStatistics.objects.create(project=instance, user=user,
+                                             is_created_project=True)
+    # else:
+    #     print('Редакторы', instance.editor.all())
+    #     for editor in instance.editor.all():
+    #         if not UserProjectStatistics.objects.filter(project=instance, user=editor).exists():
+    #             UserProjectStatistics.objects.create(project=instance, user=editor,
+    #                                                  is_created_project=True)
+
+
+@receiver(m2m_changed, sender=Project.editor.through)
+def my_m2m_changed_receiver(sender, instance, action, **kwargs):
+    if action == 'post_add':
+        print('New objects were added to the ManyToMany field')
+    elif action == 'pre_remove':
+        print('Objects were removed from the ManyToMany field')
 
 
 @receiver(signal=pre_save, sender=Link)
 def update_source_amount(sender, instance, **kwargs):
+    print('Инстанс', instance)
     project = instance.head.project
     project.source_amount = project.heads.values_list('links').count()
     links = Link.objects.filter(head__project=project)
-    if instance.id is not None:
+    try:
         old_instance = Link.objects.get(id=instance.id)
+    except:
+        old_instance = None
+    print('Старье:', old_instance)
+    if old_instance is None:
+        print('Description was changed')
+        links_descriptions = links.values_list('description', flat=True)
+        # links_descriptions.remove(old_instance.description)
+        # links_descriptions.append(instance.description)
+        project.image_percentage = count_image_percentage(links_descriptions)
+        project.video_percentage = count_video_percentage(links_descriptions)
+
+        text_percentage_list = [count_text_percentage(link) for link in links_descriptions]
+        project.text_percentage = (sum(map(lambda x: x[0], text_percentage_list)) /
+                                   sum(map(lambda x: x[1], text_percentage_list))
+                                   )
+
+
+        links_urls = list(links.values_list('url', flat=True))
+        print('урлы:', links_urls)
+        links_urls.append(instance.url)
+        filtered_links_urls = list(filter(None, links_urls))
+        print(filtered_links_urls)
+        print(len(filtered_links_urls) / len(links_urls))
+        project.links_percentage = len(filtered_links_urls) / len(links_urls)
+
+        print('Document was changed')
+        links_documents = links.values_list('document', flat=True)
+        filtered_links_documents = list(filter(None, links_documents))
+        project.links_documents = len(filtered_links_documents) / len(links_documents)
+
+        project.stars_amount = project.stars.count()
+        print('Количество звезд:', project.stars.count())
+        project.save()
+    else:
         if old_instance.description != instance.description:
             print('Description was changed')
             links_descriptions = links.values_list('description', flat=True)
+            # links_descriptions.remove(old_instance.description)
+            # links_descriptions.append(instance.description)
             project.image_percentage = count_image_percentage(links_descriptions)
             project.video_percentage = count_video_percentage(links_descriptions)
 
@@ -86,8 +136,10 @@ def update_source_amount(sender, instance, **kwargs):
             print('Url was changed')
             print('Новый url', instance.url)
             print('Старый url', old_instance.url)
-            links_urls = links.values_list('url', flat=True)
+            links_urls = list(links.values_list('url', flat=True))
             print('урлы:', links_urls)
+            links_urls.remove(old_instance.url)
+            links_urls.append(instance.url)
             filtered_links_urls = list(filter(None, links_urls))
             print(filtered_links_urls)
             print(len(filtered_links_urls) / len(links_urls))
@@ -128,10 +180,55 @@ def update_source_amount(sender, instance, **kwargs):
     #                            )
 
 
-
 @receiver(signal=post_delete, sender=Link)
 def update_source_amount(**kwargs):
     link = kwargs['instance']
     project = link.head.project
     project.source_amount = project.heads.values_list('links').count()
     project.save()
+
+#
+# @receiver(pre_save, sender=Project)
+# def user_created_project(sender, instance, **kwargs):
+#     try:
+#         old_instance = Project.objects.get(id=instance.id)
+#     except:
+#         old_instance = None
+#
+#     if old_instance is not None:
+#         if old_instance.editor != instance.editor:
+#             print('Старые', old_instance.editor)
+#             print('Новые', instance.editor)
+#             print('Поменялись редакторы')
+#
+#             statistic = UserProjectStatistics.objects.filter(project=instance,
+#                                                              user = instance.editor)
+#             statistic.is_created_project = True
+#             statistic.save()
+    # Если создался новый проект, то:
+    # - Создать записи для админа и для редактора
+
+
+# @receiver(post_save, sender=Star)
+# def user_liked_project(sender, instance, **kwargs):
+#     user = instance.liked
+#     project = instance.project
+#     statistic = UserProjectStatistics.objects.filter(project=project,
+#                                                      user=user)
+#     try:
+#         old_instance = Project.objects.get(id=instance.id)
+#     except:
+#         old_instance = None
+#
+#     if old_instance is not None:
+#
+#     print('Старье:', old_instance)
+#     if old_instance is None:
+#     statistic.is_liked_project = True
+#     statistic.save()
+
+
+# Какие еще сигналы должны быть:
+# - На лайк
+# Скорее просто запрос: - при добавлении в закладки
+# Количество просмотров: можно при каждом просмотре. Можно раз в час из логов считывать
