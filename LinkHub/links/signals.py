@@ -61,20 +61,26 @@ def create_user_project_statics(sender, instance, created, **kwargs):
         user = instance.main_admin
         UserProjectStatistics.objects.create(project=instance, user=user,
                                              is_created_project=True)
-    # else:
-    #     print('Редакторы', instance.editor.all())
-    #     for editor in instance.editor.all():
-    #         if not UserProjectStatistics.objects.filter(project=instance, user=editor).exists():
-    #             UserProjectStatistics.objects.create(project=instance, user=editor,
-    #                                                  is_created_project=True)
 
 
 @receiver(m2m_changed, sender=Project.editor.through)
 def my_m2m_changed_receiver(sender, instance, action, **kwargs):
     if action == 'post_add':
         print('New objects were added to the ManyToMany field')
+        print('Сущность', kwargs['pk_set'])
+        for editor_id in kwargs['pk_set']:
+            editor_instance = CustomUser.objects.get(id=editor_id)
+            if not UserProjectStatistics.objects.filter(
+                    project=instance, user=editor_instance).exists():
+                UserProjectStatistics.objects.create(project=instance, user=editor_instance,
+                                                     is_created_project=True)
     elif action == 'pre_remove':
         print('Objects were removed from the ManyToMany field')
+        print('Сущность', kwargs['pk_set'])
+        for editor_id in kwargs['pk_set']:
+            editor_instance = CustomUser.objects.get(id=editor_id)
+            UserProjectStatistics.objects.filter(project=instance,
+                                                 user=editor_instance).delete()
 
 
 @receiver(signal=pre_save, sender=Link)
@@ -228,7 +234,36 @@ def update_source_amount(**kwargs):
 #     statistic.save()
 
 
-# Какие еще сигналы должны быть:
-# - На лайк
+#
+@receiver(post_save, sender=Star)
+def add_like_project_info(sender, instance,  **kwargs):
+    """Изменить значение поля is_liked_project в модели
+    UserProjectStatistics на True, если пользователь поставил
+    звезду проекту"""
+    if not UserProjectStatistics.objects.filter(
+            project=instance.project,
+            user=instance.liked).exists():
+        UserProjectStatistics.objects.create(project=instance.project,
+                                             user=instance.liked,
+                                             is_liked_project=True)
+    else:
+        info = UserProjectStatistics.objects.get(project=instance.project,
+                                                 user=instance.liked)
+        info.is_liked_project = True
+        info.save()
+
+
+@receiver(pre_delete, sender=Star)
+def remove_like_project_info(sender, instance, **kwargs):
+    """Изменить значение поля is_liked_project в модели
+    UserProjectStatistics на False, если пользователь убрал звезду у
+    проекта"""
+    info = UserProjectStatistics.objects.get(project=instance.project,
+                                             user=instance.liked,
+                                             is_liked_project=True)
+    info.is_liked_project = False
+    info.save()
+
+
 # Скорее просто запрос: - при добавлении в закладки
 # Количество просмотров: можно при каждом просмотре. Можно раз в час из логов считывать
