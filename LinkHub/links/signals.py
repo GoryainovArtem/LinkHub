@@ -258,11 +258,12 @@ def remove_like_project_info(sender, instance, **kwargs):
     """Изменить значение поля is_liked_project в модели
     UserProjectStatistics на False, если пользователь убрал звезду у
     проекта"""
-    info = UserProjectStatistics.objects.get(project=instance.project,
-                                             user=instance.liked,
-                                             is_liked_project=True)
-    info.is_liked_project = False
-    info.save()
+    if UserProjectStatistics.objects.filter(project=instance.project,
+                                            user=instance.liked).exists():
+        info = UserProjectStatistics.objects.get(project=instance.project,
+                                                 user=instance.liked)
+        info.is_liked_project = False
+        info.save()
 
 
 # Скорее просто запрос: - при добавлении в закладки

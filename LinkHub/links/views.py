@@ -1,5 +1,6 @@
 import logging
 import pandas as pd
+from random import sample
 
 
 from django.contrib.auth.decorators import login_required
@@ -379,35 +380,89 @@ class Feed(ListView):
         return content
 
     def get_queryset(self):
-        import pandas as pd
+
+        def form_projects_dataset(project_id_list, is_random=False):
+            """
+            Сформировать набор данных по заданным id для загрузки в
+            Pandas DataFrame
+            :param is_random:
+            :param project_id_list:
+            :return:
+            """
+            params_names = ['main_admin', 'source_amount', 'links_percentage',
+                            'image_percentage', 'video_percentage', 'document_percentage',
+                            'text_percentage', 'stars_amount']
+            if is_random:
+                params_names.append('id')
+            themes_list = [{'themes': list(Project.objects.get(id=id).theme.all())} for id in project_id_list]
+            projects_params = Project.objects.filter(
+                id__in=project_id_list).values(*params_names)
+            for l_1, l_2 in zip(list(projects_params), themes_list):
+                l_1.update(l_2)
+            return projects_params
+
+        def process_random_projects(user):
+            """
+            Подготовить случайные проекты для проверки
+            пользовательской заинтересованности в них.
+            :return:
+            """
+
+            RECOMMENDED_PROJECTS_AMOUNT = 2
+            projects_sample = Project.objects.all().exclude(id__in=project_ids)
+            random_projects = sample(list(projects_sample), RECOMMENDED_PROJECTS_AMOUNT)
+            random_projects_ids = list(map(lambda x: x.id, random_projects))
+            themes_list = [{'themes': list(Project.objects.get(id=id).theme.all())} for id in random_projects_ids]
+            projects_params = Project.objects.filter(
+                id__in=random_projects_ids).values('id', 'main_admin', 'source_amount', 'links_percentage',
+                                                   'image_percentage', 'video_percentage',
+                                                   'document_percentage', 'text_percentage',
+                                                   'stars_amount')
+            res = [l_1.update(l_2) for l_1, l_2 in zip(list(projects_params), themes_list)]
+            return projects_params
+
+
         us = UserProjectStatistics.objects.filter(user=self.request.user)
         project_ids = us.filter().values_list('project', flat=True)
-        themes_list = [{'themes': list(Project.objects.get(id=id).theme.all())} for id in project_ids]
-        df = pd.DataFrame(list(UserProjectStatistics.objects.filter(
-            user=self.request.user).values()))
-        df.to_csv('C:\\Users\\Home PC\\Desktop\\coolsite\\my.csv')
+        if us.count() < 0:
+            return ProxyProjectOrderedStars.objects.all().exclude(id__in=us.values_list('project'))
+        else:
+
+            user_projects = form_projects_dataset(project_ids)
+            random_projects = process_random_projects(self.request.user)
+
+            def analise_projects(user_projects, random_projects):
+                user_df = pd.DataFrame(user_projects)
+                random_projects_df = pd.DataFrame(list(random_projects))
+                ids = random_projects_df.id.values
+                random_projects_df.drop(['id'], axis=1, inplace=True)
+
+                from sklearn.preprocessing import MultiLabelBinarizer
+                mlb = MultiLabelBinarizer()
+
+                user_df = user_df.join(pd.DataFrame(mlb.fit_transform(user_df.pop('themes')),
+                                          columns=mlb.classes_,
+                                          index=user_df.index))
+
+                random_projects_df = random_projects_df.join(
+                    pd.DataFrame(mlb.fit_transform(random_projects_df.pop('themes')),
+                                 columns=mlb.classes_,
+                                 index=random_projects_df.index))
+
+                lst = []
+                for k in range(random_projects_df.shape[0]):
+                    s = sum(random_projects_df.iloc[0].corr(user_df.iloc[i]) for i in range(user_df.shape[0])) / user_df.shape[0]
+                    lst.append(s)
+                random_projects_df['avg_corr'] = lst
+                random_projects_df['id'] = ids
+                top_projects = list(random_projects_df.nlargest(2, 'avg_corr').id.values)
+                return top_projects
+
+            top_projects = analise_projects(user_projects, random_projects)
+
+            return Project.objects.filter(id__in=top_projects)
 
 
-
-        zp = Project.objects.filter(
-            id__in=project_ids).values('main_admin', 'source_amount', 'links_percentage',
-                                       'image_percentage', 'video_percentage',
-                                       'document_percentage', 'text_percentage',
-                                       'stars_amount')
-
-
-
-        res = [l_1.update(l_2) for l_1, l_2 in zip(list(zp), themes_list)]
-
-        project_df = pd.DataFrame(list(zp))
-        project_df.to_csv('C:\\Users\\Home PC\\Desktop\\coolsite\\project.csv', index=False)
-
-        # Грузим рандомные проекты
-        projects_sample = Project.objects.all().exclude(id__in=project_ids)
-
-        from random import sample
-
-        random_projects = sample(list(projects_sample), 2)
 
     # def get_queryset(self):
     #     #  -- Мои проекты --

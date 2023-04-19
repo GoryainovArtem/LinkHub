@@ -83,11 +83,11 @@ class Project(BaseClass):
         ordering = ('-created',)
 
 
-class StarManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().annotate(
-            stars_amount=Count('stars')
-        ).order_by('-stars_amount')
+# class StarManager(models.Manager):
+#     def get_queryset(self):
+#         return super().get_queryset().annotate(
+#             stars_amount=Count('stars')
+#         ).order_by('-stars_amount')
 
 
 class ProxyProjectOrderedDesc(Project):
@@ -97,10 +97,11 @@ class ProxyProjectOrderedDesc(Project):
 
 
 class ProxyProjectOrderedStars(Project):
-    objects = StarManager()
+    #objects = StarManager()
 
     class Meta:
         proxy = True
+        ordering = ('-stars_amount', '-created')
 
 
 class Head(BaseClass):
