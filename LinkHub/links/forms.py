@@ -1,6 +1,5 @@
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
 from .models import Project, Link, Head, Theme, \
     ProxyProjectOrderedDesc, ProxyProjectOrderedStars, \
@@ -9,44 +8,47 @@ from .models import Project, Link, Head, Theme, \
 from users.models import CustomUser
 
 
-class ProjectForm(forms.ModelForm):
+class BaseFormWithText(forms.ModelForm):
+    description = forms.CharField(
+        label='Описание',
+        help_text='Добавьте описание',
+        widget=CKEditorUploadingWidget(), required=False)
 
+
+class ProjectForm(BaseFormWithText):
     class Meta:
         model = Project
-        fields = ('title', 'description', 'theme',)
+        fields = ('title', 'description', 'theme', 'is_private')
 
 
-class LinkForm(forms.ModelForm):
-    description = forms.CharField(
-        label='Описание',
-        help_text='Добавьте описание',
-        widget=CKEditorUploadingWidget(), required=False)
+class ProjectAdminForm(BaseFormWithText):
+    class Meta:
+        model = Project
+        fields = ('title', 'description', 'theme', 'main_admin', 'editor', 'is_private')
 
+
+class LinkForm(BaseFormWithText):
     class Meta:
         model = Link
-        fields = ('title', 'description', 'url', 'document')
+        fields = ('title', 'number', 'description', 'url')
 
 
-class CreateLinkAdminForm(forms.ModelForm):
-    description = forms.CharField(
-        label='Описание',
-        help_text='Добавьте описание',
-        widget=CKEditorUploadingWidget(), required=False)
-
+class AdminLinkForm(BaseFormWithText):
     class Meta:
         model = Link
         fields = ('title', 'number', 'description', 'url', 'head')
 
 
-class CreateHeadForm(forms.ModelForm):
-    description = forms.CharField(
-        label='Описание',
-        help_text='Добавьте описание',
-        widget=CKEditorUploadingWidget(), required=False)
-
+class CreateHeadForm(BaseFormWithText):
     class Meta:
         model = Link
         fields = ('number', 'title', 'description')
+
+
+class CreateAdminHeadForm(BaseFormWithText):
+    class Meta:
+        model = Head
+        fields = ('number', 'title', 'description', 'project')
 
 
 class SearchHeadForm(forms.Form):
@@ -94,12 +96,6 @@ class CommentForm(forms.ModelForm):
 
 
 class GiveEditorRoleForm(forms.Form):
-
-    # title = forms.ModelChoiceField(
-    #     queryset=Project.objects.filter(main_admin=self.main_admin),
-    #     label='Проект',
-    #     help_text='Выберите проект, в котором хотите выдать '
-    #               'роль "Редактор" данному пользователю.')
     class Meta:
         model = Project
         fields = ('id', )

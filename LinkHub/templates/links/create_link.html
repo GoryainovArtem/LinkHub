@@ -8,35 +8,46 @@
   {% endif %}
 {% endblock %}
 {% block content %}
-  <h3 class="mb-4">{% if is_editing %} Создать новый источник {% else %} Создать новый источник{% endif %}</h3>
-  {{ form.media }}
-  <form method="post" action="">
-    {% csrf_token %}
-    {{ form.media }}
-    {% for field in form %}
-      <div class="my-3"
-        {% if field.field.required %}
-         aria-required="true"
-        {% else %}
-           aria-required="false"
-        {% endif %}
-      >
-        <label for="{{ field.id_for_label }}">
-          {{ field.label }}
-          {% if field.field.required %}
-            <span class="required text-danger">*</span>
-          {% endif %}
-        </label><br>
-        {{ field|addclass:'form-control' }}
-        {% if field.help_text %}
-          <small class="form-text text-muted">
-            {{ field.help_text }}
-          </small>
-        {% endif %}
+  <h3 class="mb-4">
+    {% if is_editing %} Создать новый источник {% else %} Создать новый источник{% endif %}
+  </h3>
+  <div class="row justify-content-center">
+    <div class="col-md-10 p-4">
+      <div class="card">
+        <div class="card-header">Новый раздел</div>
+        <div class="card-body">
+          {{ form.media }}
+          <form method="post" action="">
+            {% csrf_token %}
+            {{ form.media }}
+            {% for field in form %}
+              <div class="my-3"
+                {% if field.field.required %}
+                 aria-required="true"
+                {% else %}
+                   aria-required="false"
+                {% endif %}
+              >
+                <label for="{{ field.id_for_label }}">
+                  {{ field.label }}
+                  {% if field.field.required %}
+                    <span class="required text-danger">*</span>
+                  {% endif %}
+                </label><br>
+                {{ field|addclass:'form-control' }}
+                {% if field.help_text %}
+                  <small class="form-text text-muted">
+                    {{ field.help_text }}
+                  </small>
+                {% endif %}
+              </div>
+            {% endfor %}
+            <button class="btn btn-primary float-end" type="submit">
+              {% if is_editing %}Сохранить изменения{% else %}Создать новый источник{%endif%}
+            </button>
+          </form>
+        </div>
       </div>
-    {% endfor %}
-    <button class="btn btn-primary float-end" type="submit">
-      {% if is_editing %}Сохранить изменения{% else %}Создать новый источник{%endif%}
-    </button>
-  </form>
+    </div>
+  </div>
 {% endblock %}

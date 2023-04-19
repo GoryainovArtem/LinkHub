@@ -4,41 +4,31 @@
 {% endblock %}
 {% block content %}
   <h3> Опубликованные проекты </h3>
-  <form method="get" class="mb-4">
+  <form method="get" class="my-4">
     {% csrf_token %}
-    {% for field in form %}
-      <div>
-        <label>
-          {{ field.label }}
-        </label>
-        {{ field }}
-      </div>
-    {% endfor %}
-    <button type="submit" class="btn btn-primary ">Найти проект</button>
-  </form>
-  {% for project in projects %}
-    <div class="media mb-4 project_head" style="background-color: #F5F5F5">
-      <div class="media-body">
-        <div class="media_inner_container" >
-          <div class="media_inner_left" >
-            <h5 class="mt-0">
-              <a href="{% url 'links:project_detailed' project.id %}">
-                {{ project.title }}
-              </a>
-            </h5>
-            <p>
-              {{ project.description }}
-            </p>
-          </div>
-          <div class="media_inner_right" >
-            <h6 class="more_info">
-              <a href="">
-                Подробнее
-              </a>
-            </h6>
-          </div>
-        </div>
-      </div>
+    <ul>
+      {% for theme in view.get_themes %}
+        <li class="editContent">
+          <input type="checkbox" name="theme" value="{{ theme.id }}">
+          <span>{{ theme.name }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+    <div class="my-4 d-flex justify-content-between align-items-end">
+      <button type="submit" class="btn btn-primary">Найти проект</button>
+      <select class="select_container" name="sorted_type">
+        <option value="0">Новые</option>
+        <option value="1">Старые</option>
+        <option value="2">Высокий рейтинг</option>
+      </select>
     </div>
-  {% endfor %}
+  </form>
+  {% if projects|length == 0 %}
+    <span>По вашему запросу ничего не найдено ...</span>
+  {% else %}
+    {% for project in projects %}
+      {% include 'includes/card.html' %}
+    {% endfor %}
+    {% include 'links/paginator.html' %}
+  {% endif %}
 {% endblock %}

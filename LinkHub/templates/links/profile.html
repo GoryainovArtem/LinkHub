@@ -17,9 +17,9 @@
     {% endthumbnail %}
     <div class="profile_info col">
         <div class="info_container">
-            <span><b>О себе: </b>{{ profile.about_info|slice:'3:-4'|safe }}</span>
-            <span><b>Имя: </b>{{ profile.get_full_name }}</span>
-            <span><b>Почта: </b>{{ profile.email }}</span>
+            <span><b>О себе: </b>{% if profile.about %}{{ profile.about_info|slice:'3:-4'|safe }}{% else %}Не указано{% endif %}</span>
+            <span><b>Имя: </b>{% if profile.first_name %}{{ profile.get_full_name }}{% else %}Не указано{% endif %}</span>
+            <span><b>Почта: </b>{% if profile.email %}{{ profile.email }}{% else %}Не указано{% endif %}</span>
         </div>
     </div>
   </div>

@@ -238,3 +238,7 @@ main {
   display: flex;
   position: absolute;
 }
+
+.select_container {
+  height: 30px;
+}

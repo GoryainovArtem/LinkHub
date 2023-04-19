@@ -16,9 +16,9 @@
   {% endif %}
 </h3>
 <div class="row justify-content-center">
-  <div class="col-md-8 p-4">
+  <div class="col-md-10 p-4">
     <div class="card">
-      <div class="card-header">Проект "{{ project.title }}"</div>
+      <div class="card-header">Новый проект</div>
       <div class="card-body">
         {% if form.errors %}
           {% for field in form %}
@@ -35,6 +35,7 @@
           {% endfor %}
         {% endif %}
         <form method="post">
+          {{ form.media }}
           {% csrf_token %}
           {% for field in form %}
           <div class="my-3"

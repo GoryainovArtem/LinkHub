@@ -1,18 +1,20 @@
 from django.contrib import admin
 from .models import Project, Theme, Head, Link, Comment, Star, UserProjectStatistics
-from .forms import CreateLinkAdminForm
+from .forms import AdminLinkForm, CreateAdminHeadForm, ProjectAdminForm
 
 
 class CustomProject(admin.ModelAdmin):
-    list_display = ('id', 'title', 'description', 'created', 'last_edit', 'is_private', 'is_group_project')
+    list_display = ('id', 'title', 'description', 'created', 'last_edit', 'is_private')
     list_filter = ('created',)
-    list_editable = ('title', 'description', 'is_private', 'is_group_project')
+    list_editable = ('title', 'description', 'is_private')
+    form = ProjectAdminForm
 
 
 class CustomHead(admin.ModelAdmin):
     list_display = ('id', 'title', 'number', 'description', 'project', 'created', 'last_edit')
     list_filter = ('created',)
     list_editable = ('title', 'description', )
+    form = CreateAdminHeadForm
 
 
 class CustomTheme(admin.ModelAdmin):
@@ -23,7 +25,7 @@ class CustomTheme(admin.ModelAdmin):
 class CustomLink(admin.ModelAdmin):
     list_display = ('id', 'title', 'number', 'description', 'url', 'document', 'head')
     list_editable = ('title', 'title', 'number', 'description', 'url')
-    form = CreateLinkAdminForm
+    form = AdminLinkForm
 
 
 class CustomComment(admin.ModelAdmin):

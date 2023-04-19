@@ -15,53 +15,62 @@
     Создание нового раздела
   {% endif %}
   </h3>
-  {{ form.media }}
-  {% if form.errors %}
-    {% for field in form %}
-      {% for error in field.errors %}
-        <div class="alert alert-danger">
-          {{ error|escape }}
+  <div class="row justify-content-center">
+    <div class="col-md-10 p-4">
+      <div class="card">
+        <div class="card-header">Новый раздел</div>
+        <div class="card-body">
+          {{ form.media }}
+          {% if form.errors %}
+            {% for field in form %}
+              {% for error in field.errors %}
+                <div class="alert alert-danger">
+                  {{ error|escape }}
+                </div>
+              {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+              <div class="alert alert-danger">
+                {{ errors|escape }}
+              </div>
+            {% endfor %}
+          {% endif %}
+          <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="my-3"
+              {% if field.field.required %}
+                aria-required="true"
+              {% else %}
+                aria-required="false"
+              {% endif %}
+            >
+              <label for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.field.required %}
+                  <span class="required text-danger">*</span>
+                {% endif %}
+              </label><br>
+              {{ field|addclass:'form-control' }}
+              {% if field.help_text %}
+                <small id="{{ field.id_for_label }}-help" class="form-text text-muted">
+                  {{ field.help_text}}
+                </small>
+              {% endif %}
+            </div>
+            {% endfor %}
+            <div class="col-md-6 offset-md-4">
+              <button type="submit" class="btn btn-primary">
+                {% if is_editing %}
+                  Сохранить изменения
+                {% else %}
+                  Создать новый раздел
+                {% endif %}
+              </button>
+            </div>
+          </form>
         </div>
-      {% endfor %}
-    {% endfor %}
-    {% for error in form.non_field_errors %}
-      <div class="alert alert-danger">
-        {{ errors|escape }}
       </div>
-    {% endfor %}
-  {% endif %}
-  <form method="post">
-    {% csrf_token %}
-    {% for field in form %}
-    <div class="my-3"
-      {% if field.field.required %}
-        aria-required="true"
-      {% else %}
-        aria-required="false"
-      {% endif %}
-    >
-      <label for="{{ field.id_for_label }}">
-        {{ field.label }}
-        {% if field.field.required %}
-          <span class="required text-danger">*</span>
-        {% endif %}
-      </label><br>
-      {{ field|addclass:'form-control' }}
-      {% if field.help_text %}
-        <small id="{{ field.id_for_label }}-help" class="form-text text-muted">
-          {{ field.help_text}}
-        </small>
-      {% endif %}
     </div>
-    {% endfor %}
-    <div class="col-md-6 offset-md-4">
-      <button type="submit" class="btn btn-primary">
-        {% if is_editing %}
-          Сохранить изменения
-        {% else %}
-          Создать новый раздел
-        {% endif %}
-      </button>
-    </div>
-  </form>
+  </div>
 {% endblock %}

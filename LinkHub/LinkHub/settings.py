@@ -162,6 +162,7 @@ SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
 
 CKEDITOR_CONFIGS = {
     'default': {
+        'width': 'auto',
         'skin': 'moono',
         # 'skin': 'office2013',
         'toolbar_Basic': [
