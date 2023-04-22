@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load user_filters %}
 {% block title %}
   {{ page_title }}
 {% endblock %}
@@ -18,7 +19,7 @@
                 </a>
               </h5>
               <p>
-                {{ project.description }}
+                {{ project.description|get_description }}
               </p>
             </div>
             <div class="media_inner_right" >

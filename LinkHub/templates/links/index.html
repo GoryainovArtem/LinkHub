@@ -1,9 +1,19 @@
 {% extends 'base.html' %}
+{% load user_filters %}
 {% block title %}
   Главная страница
 {% endblock %}
 {% block content %}
   <h3> Опубликованные проекты </h3>
+  <div style="background: orange" class="">
+    <form method="get"  class="my-4">
+      {% csrf_token %}
+      {% for field in search_form %}
+        {{ field|addclass:'search_line' }}
+      {% endfor %}
+    <button type="submit" class="btn btn-primary">Искать</button>
+  </form>
+  </div>
   <form method="get" class="my-4">
     {% csrf_token %}
     <ul>

@@ -20,7 +20,7 @@ from .models import Project, Head, Link, Comment, Star, \
     Theme, ProxyProjectOrderedDesc, ProxyProjectOrderedStars, \
     UserProjectStatistics
 from .forms import ProjectForm, LinkForm, \
-    CreateHeadForm, SearchHeadForm,  SortedProjectsType, \
+    CreateHeadForm, SearchForm,  SortedProjectsType, \
     CommentForm, GiveEditorRoleForm
 
 from users.models import CustomUser
@@ -42,19 +42,18 @@ class Index(ThemeSort, ListView):
     model = Project
     template_name = 'links/index.html'
     context_object_name = 'projects'
-    paginate_by = 1
+    #paginate_by = 1
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(Index, self).get_context_data()
+        context['search_form'] = SearchForm()
         return context
 
     def get_queryset(self):
-        print('Темы', self.request.GET.getlist('theme'))
         sorted_type = self.request.GET.get('sorted_type', '0')
         project_model = self.PROJECTS_LIST_MODEL[sorted_type]
-        print('Тип сортировки', sorted_type)
         themes = self.request.GET.getlist('theme')
-        queryset = project_model.objects.all()
+        queryset = project_model.objects.filter(is_private=False)
         for theme in themes:
             queryset = queryset.filter(theme__in=theme)
         return queryset
@@ -108,7 +107,7 @@ class DetailedProject(DetailView):
             ).exists()
         if self.request.session.get('saved'):
             context['is_saved'] = self.kwargs['id'] in self.request.session['saved']
-        context['form'] = SearchHeadForm()
+        context['form'] = SearchForm()
         return context
 
 
@@ -160,7 +159,7 @@ class LikeProject(View):
 
 
 class DenyLike(View):
-    """Убрать у проекта отметку 'Мне нравится'"""
+    """Убрать у проекта отметку 'Мне нравится'."""
 
     def post(self, request, *args, **kwargs):
         user = request.user
@@ -170,26 +169,33 @@ class DenyLike(View):
         return redirect('links:project_detailed', id=kwargs['id'])
 
 
-class Head(DetailView):
+class DetailedHead(DetailView):
+    """Класс для раздела проекта."""
     model = Head
     template_name = 'links/heads.html'
     pk_url_kwarg = 'id'
     context_object_name = 'head'
 
 
-def head_edit(request, head_id):
-    head = get_object_or_404(Head, id=head_id)
-    template = 'links/create_head.html'
-    form = CreateHeadForm(request.POST or None,
-                          instance=head)
-    context = {
-        'is_editing': True,
-        'form': form
-    }
-    return render(request, template, context)
+class HeadEdit(UpdateView):
+    """Редактирование информации о разделе."""
+    model = Head
+    form_class = CreateHeadForm
+    template_name = 'links/create_head.html'
+    pk_url_kwarg = 'id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        context['is_editing'] = True
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('links:project_detailed',
+                            kwargs={'id': self.object.project.id})
 
 
 def link(request, id):
+    """Класс для источника информации."""
     link = get_object_or_404(Link, id=id)
     comments = link.comments.select_related('author')
     print('Комменты:', comments)
@@ -204,6 +210,7 @@ def link(request, id):
 
 
 class CreateLink(CreateView):
+    """Создать источник информации."""
     model = Link
     template_name = 'links/create_link.html'
     form_class = LinkForm
@@ -228,14 +235,14 @@ class CreateHead(CreateView):
     pk_url_kwarg = 'id'
 
     def form_valid(self, form):
-        project = get_object_or_404(Project, id=self.kwargs['id'])
+        project = get_object_or_404(Project, id=self.kwargs.get('id'))
         form.instance.project = project
         return super().form_valid(form)
 
     def get_success_url(self):
-        print('id нового раздела:', self.object)
+        print('Продолжаем')
         return reverse_lazy('links:project_detailed',
-                            kwargs={'id': self.object.id})
+                            kwargs={'id': self.kwargs['id']})
 
 
 class Profile(DetailView):
@@ -255,7 +262,12 @@ class Profile(DetailView):
                                       user.projects_edit.count()
                                       )
         context['is_editor'] = self.request.user.created_projects.filter(editor=user)
-        context['projects'] = ProxyProjectOrderedStars.objects.filter(search_criterions)
+        if self.request.user == user:
+            context['projects'] = ProxyProjectOrderedStars.objects.filter(search_criterions)
+        else:
+            context['projects'] = ProxyProjectOrderedStars.objects.filter(search_criterions).filter(
+                is_private=False
+            )
         return context
 
 
@@ -514,6 +526,19 @@ class DenyEditorRole(View):
         project.editor.remove(editor)
         project.save()
         return redirect('links:profile', kwargs['editor_id'])
+
+
+class HeadDelete(DeleteView):
+    model = Head
+    template_name = 'links/delete_confirm.html'
+    pk_url_kwarg = 'id'
+
+    def get_success_url(self):
+        return reverse_lazy('links:project_detailed',
+                            kwargs={
+                                'id': self.object.project.id
+                            }
+                            )
 
 
 

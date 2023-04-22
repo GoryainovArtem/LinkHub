@@ -72,6 +72,7 @@ class Project(BaseClass):
 
 
 class ProxyProjectOrderedDesc(Project):
+
     class Meta:
         proxy = True
         ordering = ('created',)
@@ -99,6 +100,7 @@ class Head(BaseClass):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
+        print('Я в разделах')
         if not self.number:
             buf = self.project.heads.aggregate(max_number=Max('number'))
             print('Баф',buf)
@@ -137,6 +139,7 @@ class Link(BaseClass):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
+        print('Я в линках')
         if not (self.url or self.document or self.description):
             raise ValidationError('Хотя бы одно из полей: описание, ссылка, документ должно быть заполнено.')
         if self.number is None:

@@ -41,7 +41,7 @@ class AdminLinkForm(BaseFormWithText):
 
 class CreateHeadForm(BaseFormWithText):
     class Meta:
-        model = Link
+        model = Head
         fields = ('number', 'title', 'description')
 
 
@@ -51,12 +51,12 @@ class CreateAdminHeadForm(BaseFormWithText):
         fields = ('number', 'title', 'description', 'project')
 
 
-class SearchHeadForm(forms.Form):
+class SearchForm(forms.Form):
     input_string = forms.CharField(
         max_length=100,
         widget=forms.TextInput(
             attrs={
-                'placeholder': 'Введите название раздела'
+                'placeholder': 'Введите название проекта'
             }
         )
     )

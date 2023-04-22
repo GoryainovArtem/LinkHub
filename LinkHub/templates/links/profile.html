@@ -64,7 +64,7 @@
             <div class="media_inner_left" >
               <h5 class="mt-0">
                 <a href="{% url 'links:project_detailed' project.id %}">
-                  {{ forloop.counter }}. {{ project.title }}
+                  {{ forloop.counter }}. {{ project.title }} {% if project.is_private %} (private){% endif %}
                 </a>
               </h5>
               <p>

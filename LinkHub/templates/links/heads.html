@@ -19,11 +19,13 @@
                 {{ forloop.counter }}. {{ link.title }}
               </a>
             </h5>
-            <h6 class="mt-0">
-              <a href="{{ link.url }}" target="_blank " >
-                {{ link.url }}
-              </a>
-            </h6>
+            {% if link.url %}
+              <h6 class="mt-0">
+                <a href="{{ link.url }}" target="_blank " >
+                  {{ link.url }}
+                </a>
+              </h6>
+            {% endif %}
             <p>
               {{ link.description|get_description }}
             </p>

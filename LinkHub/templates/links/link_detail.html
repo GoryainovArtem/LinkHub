@@ -11,37 +11,47 @@
   <div class="row justify-content-center">
     <div class="col-md-10 p-4">
       <div class="card">
-        <div class="card-header">Новый раздел</div>
+        <div class="card-header">{{ link.title }}</div>
         <div class="card-body">
-            <span>
-              <h6>Описание:</h6>
-              {{ link.description|safe }}
-            </span>
+          {% if link.url %}
             <span>
               <h6>Ссылка:</h6>
               <a href="{{ link.url }}">
                 {{ link.url }}
               </a>
             </span>
-
-<!--Комментарии-->
-            <div class="card my-4">
-              <h5 class="card-header"><a href="">
-                  {% thumbnail user.profile_image "360x360" as im %}
-                    <img width="80"  height="80" src="{{ im.url }}" alt="" />
-                  {% endthumbnail %}
-              </a> <span class="ml-3">Добавить комментарий</span> </h5>
-              <div class="card-body">
-                <form method="post" action="{% url 'links:add_comment' link.id %}">
-                  {% csrf_token %}
-                  {{ form.media }}
-                  <div class="form-group mb-2">
-                    {{ form.text|addclass:"form-control" }}
-                  </div>
-                  <button type=submit class="btn btn-primary">Добавить комментарий</button>
-                </form>
-              </div>
+          {% endif %}
+          {% if link.document %}
+            <span>
+              <h6>Источник:</h6>
+              <a href="{{ link.url }}">
+                Загрузить файл {{ link.document }}
+              </a>
+            </span>
+          {% endif %}
+          {% if link.description %}
+            <span>
+              <h6 class="my-1">Описание:</h6>
+              {{ link.description|safe }}
+            </span>
+          {% endif %}
+          <div class="card my-4">
+            <h5 class="card-header"><a href="">
+                {% thumbnail user.profile_image "360x360" as im %}
+                  <img width="80"  height="80" src="{{ im.url }}" alt="" />
+                {% endthumbnail %}
+            </a> <span class="ml-3">Добавить комментарий</span> </h5>
+            <div class="card-body">
+              <form method="post" action="{% url 'links:add_comment' link.id %}">
+                {% csrf_token %}
+                {{ form.media }}
+                <div class="form-group mb-2">
+                  {{ form.text|addclass:"form-control" }}
+                </div>
+                <button type=submit class="btn btn-primary">Добавить комментарий</button>
+              </form>
             </div>
+          </div>
           <h4 class="mb-4">Комментарии:</h4>
           {% for comment in comments %}
             <div class="card my-4">
@@ -59,5 +69,4 @@
       </div>
     </div>
   </div>
-
 {% endblock %}

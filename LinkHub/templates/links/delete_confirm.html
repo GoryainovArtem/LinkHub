@@ -9,9 +9,17 @@
       <div class="card-body">
         <form method="post">
           {% csrf_token %}
-          <p>Вы уверены, что хотите удалить источник "{{ link.title }}"?</p>
-          <button class="btn btn-primary">Да</button>
-          <a href="{% url 'links:head' link.head.id %}" class="btn btn-primary text-light">Нет</a>
+          {% with request.resolver_match.view_name as view_name %}
+            {% if view_name == 'links:head_delete' %}
+              <p>Вы уверены, что хотите удалить главу "{{ head.title }}"?</p>
+              <button class="btn btn-primary">Да</button>
+                <a href="{% url 'links:project_detailed' head.project.id %}" class="btn btn-primary text-light">Нет</a>
+          {% else %}
+              <p>Вы уверены, что хотите удалить источник "{{ link.title }}"?</p>
+              <button class="btn btn-primary">Да</button>
+                <a href="{% url 'links:head' link.head.id %}" class="btn btn-primary text-light">Нет</a>
+          {% endif %}
+          {% endwith %}
         </form>
       </div>
     </div>
