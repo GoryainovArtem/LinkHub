@@ -30,7 +30,7 @@ class ProjectAdminForm(BaseFormWithText):
 class LinkForm(BaseFormWithText):
     class Meta:
         model = Link
-        fields = ('title', 'number', 'description', 'url')
+        fields = ('title', 'number', 'description', 'url', 'document')
 
 
 class AdminLinkForm(BaseFormWithText):
