@@ -258,16 +258,22 @@ class Profile(DetailView):
         context = super().get_context_data()
         context['mart'] = ProxyProjectOrderedStars.objects.filter(
             search_criterions)[:self.MART_ELEMENTS_AMOUNT]
-        context['projects_amount'] = (user.created_projects.count() +
-                                      user.projects_edit.count()
-                                      )
-        context['is_editor'] = self.request.user.created_projects.filter(editor=user)
+        if self.request.user.is_authenticated:
+            context['is_editor'] = self.request.user.created_projects.filter(editor=user)
         if self.request.user == user:
             context['projects'] = ProxyProjectOrderedStars.objects.filter(search_criterions)
+            context['projects_amount'] = Project.objects.filter(
+                Q(main_admin=user) | Q(editor=user)).count()
         else:
             context['projects'] = ProxyProjectOrderedStars.objects.filter(search_criterions).filter(
                 is_private=False
             )
+            context['projects_amount'] = (Project.objects.filter(is_private=False
+                                                                 ).filter(
+                Q(main_admin=user) | Q(editor=user)).count()
+                    # user.created_projects.filter(is_private=False).count() +
+                    #                       user.projects_edit.filter(is_private=False).count()
+                                          )
         return context
 
 

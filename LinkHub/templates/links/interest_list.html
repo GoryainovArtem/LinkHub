@@ -3,20 +3,7 @@
   {{ theme.name }}
 {% endblock %}
 {% block content %}
-  <h3> Проекты на тему: "{{ theme.name }}"</h3>
-  <form class="my-4" method="get" action="">
-    {% csrf_token %}
-    <div class="search_block">
-      <input class="search_line" type="text" placeholder="Введите название проекта" name="q">
-      <button type="submit" class="btn btn-primary">Искать</button>
-    </div>
-  </form>
-  <form method="post">
-    {% csrf_token %}
-    {% for field in form %}
-      {{ field }}
-    {% endfor %}
-  </form>
+  <h3 class="mb-3"> Проекты на тему: "{{ theme.name }}"</h3>
   {% for project in projects %}
     <div class="media mb-4 project_head" style="background-color: #F5F5F5">
       <div class="media-body">

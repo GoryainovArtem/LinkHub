@@ -227,3 +227,5 @@ CKEDITOR_CONFIGS = {
         ]),
     }
 }
+
+SAVED_SESSION_ID = 'saved'
