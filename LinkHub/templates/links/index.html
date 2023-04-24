@@ -33,10 +33,10 @@
       </select>
     </div>
   </form>
-  {% if projects|length == 0 %}
+  {% if page_obj|length == 0 %}
     <span>По вашему запросу ничего не найдено ...</span>
   {% else %}
-    {% for project in projects %}
+    {% for project in page_obj %}
       {% include 'includes/card.html' %}
     {% endfor %}
     {% include 'links/paginator.html' %}

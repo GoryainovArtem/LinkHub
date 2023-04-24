@@ -30,5 +30,5 @@ urlpatterns = [
     path('users/<int:editor_id>/give_editor_role/',
          views.GiveEditorRole.as_view(), name='give_editor_role'),
     path('users/<int:editor_id>/deny_editor_role/',
-         views.DenyEditorRole.as_view(), name='deny_editor_role')
+         views.DenyEditorRole.as_view(), name='deny_editor_role'),
 ]

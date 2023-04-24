@@ -3,10 +3,12 @@ from datetime import timedelta
 
 import pandas as pd
 from random import sample
+
+from django.core.paginator import Paginator
 from sklearn.preprocessing import MultiLabelBinarizer
 
 
-from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.db.models import Q, Count
 from django import forms
 from django.http import HttpResponse
@@ -27,13 +29,7 @@ from users.models import CustomUser
 from users.forms import EditProfileForm
 
 
-class ThemeSort:
-
-    def get_themes(self):
-        return Theme.objects.all()
-
-
-class Index(ThemeSort, ListView):
+class Index(ListView):
     PROJECTS_LIST_MODEL = {
         '0': Project,
         '1': ProxyProjectOrderedDesc,
@@ -41,22 +37,83 @@ class Index(ThemeSort, ListView):
     }
     model = Project
     template_name = 'links/index.html'
-    context_object_name = 'projects'
-    #paginate_by = 1
+    paginate_by = 2
+    queryset = Project.objects.all().filter(is_private=False)
+
+    def get(self, request, *args, **kwargs):
+        print('Сессия до', self.request.session.get('selected_filters'))
+        print(self.request.GET)
+        request_params = dict(self.request.GET)
+        if 'page' in self.request.GET:
+            print('А я тут')
+            request_params.pop('page')
+            if len(request_params) == 0:
+                self.request.session['selected_filters'] = {}
+                self.request.modified = True
+            print('Параметры:', request_params)
+        if not self.request.session.get('selected_filters') and request_params:
+            print('Ставим')
+            self.request.session['selected_filters'] = request_params
+            self.request.modified = True
+
+        print('Сессия после', self.request.session.get('selected_filters'))
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, *, object_list=None, **kwargs):
+        print('Это get_context_data')
         context = super(Index, self).get_context_data()
         context['search_form'] = SearchForm()
+        queryset = self.get_queryset()
+        print('Новый quesryset', queryset)
+        paginator = Paginator(queryset, self.paginate_by)
+        page_number = self.request.GET.get('page')
+        print('Номер страницы', page_number)
+        page_obj = paginator.get_page(page_number)
+        print('Page_obj', page_obj.object_list)
+        context['page_obj'] = page_obj
         return context
 
     def get_queryset(self):
-        sorted_type = self.request.GET.get('sorted_type', '0')
-        project_model = self.PROJECTS_LIST_MODEL[sorted_type]
-        themes = self.request.GET.getlist('theme')
-        queryset = project_model.objects.filter(is_private=False)
-        for theme in themes:
-            queryset = queryset.filter(theme__in=theme)
-        return queryset
+
+        if self.request.session.get('selected_filters'):
+            request_params = self.request.session['selected_filters']
+            sorted_type = request_params.get('sorted_type', '0')[0]
+            project_model = self.PROJECTS_LIST_MODEL[sorted_type]
+            themes = request_params.get('theme')
+            print('Параметры:', themes, project_model)
+            queryset = project_model.objects.filter(is_private=False)
+            for theme in themes:
+                queryset = queryset.filter(theme__in=theme)
+            print('Итоговый queryset', queryset)
+            return queryset
+        return self.queryset
+
+        #     # if self.request.session['selected_filters']:
+        #     #request_params = self.request.session['selected_filters']
+        #     sorted_type = request_params.get('sorted_type', '0')
+        #     project_model = self.PROJECTS_LIST_MODEL[sorted_type]
+        #     themes = request_params.get('theme')
+        #     print('Параметры:', themes, sorted_type)
+    #     #     queryset = project_model.objects.filter(is_private=False)
+    #     #     return queryset
+       # return self.queryset
+
+
+        # if self.request.GET.get('sorted_type') or self.request.GET.getlist('theme'):
+        #     sorted_type = self.request.GET.get('sorted_type', '0')
+        #     project_model = self.PROJECTS_LIST_MODEL[sorted_type]
+        #     themes = self.request.GET.getlist('theme')
+        #     queryset = project_model.objects.filter(is_private=False)
+        #     for theme in themes:
+        #         queryset = queryset.filter(theme__in=theme)
+        # else:
+        #     selected_filter = self.request.session.get('selected_filter')
+        #     if selected_filter:
+        #         queryset = self.queryset.filter()
+
+
+    def get_themes(self):
+        return Theme.objects.all()
 
 
 class DetailedProject(DetailView):
@@ -66,7 +123,6 @@ class DetailedProject(DetailView):
     context_object_name = 'project'
 
     def get_context_data(self, **kwargs):
-        # visited: {'page': [date, date, ...]}
         logging.basicConfig(
             level=logging.DEBUG,
             filename=f'logs/pages/{self.request.user.id}.log',
@@ -105,8 +161,7 @@ class DetailedProject(DetailView):
             context['is_liked'] = project.stars.filter(
                 liked=self.request.user
             ).exists()
-        if self.request.session.get('saved'):
-            context['is_saved'] = self.kwargs['id'] in self.request.session['saved']
+        context['is_saved'] = project in self.request.user.saved_projects.all()
         context['form'] = SearchForm()
         return context
 
@@ -378,14 +433,16 @@ class SavedProjects(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data()
-        context['have_content'] = self.request.session.get('saved')
+        context['have_content'] = bool(self.request.user.saved_projects.all())
         context['page_title'] = 'Сохраненные'
         return context
 
     def get_queryset(self):
-        if self.request.session.get('saved'):
-            saved_list = self.request.session.get('saved')
-            return Project.objects.filter(id__in=saved_list)
+        return self.request.user.saved_projects.all()
+        #return self.request.user.prefetch_related(saved_projects).all()
+        # if self.request.session.get(settings.SAVED_SESSION_ID):
+        #     saved_list = self.request.session.get(settings.SAVED_SESSION_ID)
+        #     return Project.objects.filter(id__in=saved_list)
 
 
 class Feed(ListView):

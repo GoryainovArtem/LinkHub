@@ -77,7 +77,13 @@
                          " method="post">
               {% csrf_token %}
               <input type='hidden'>
-              <button type="submit" type="submit" class="btn {% if is_saved %}btn-secondary{% else %}btn-primary{% endif %}">Добавить в сохраненное</button>
+              <button type="submit" type="submit" class="btn {% if is_saved %}btn-secondary{% else %}btn-primary{% endif %}">
+                {% if is_saved %}
+                  Удалить из сохраненных
+                {% else %}
+                  Добавить в сохраненное
+                {% endif %}
+              </button>
             </form>
           </div>
         </div>

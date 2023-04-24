@@ -57,6 +57,8 @@ class Project(BaseClass):
                                                'public - доступен только создателю и редакторам; '
                                                'private - доступен для всех пользователей')
 
+    saved_users = models.ManyToManyField(CustomUser, related_name='saved_projects')
+
     source_amount = models.IntegerField(default=0)
     links_percentage = models.FloatField(default=0)
     image_percentage = models.FloatField(default=0)
