@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}
+  Подтверждение регистрации
+{% endblock %}
+{% block content %}
+  <p>
+      На вашу почту отправлена ссылка для подтверждения регистрации. Пожалуйста, перейдите по ней.
+  </p>
+  <p>
+    <a href="{% url 'users:login' %}" class="btn btn-primary">
+      Войти
+    </a>
+  </p>
+{% endblock %}

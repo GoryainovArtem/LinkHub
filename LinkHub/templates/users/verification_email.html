@@ -1,0 +1,4 @@
+{% autoescape off %}
+Сообщение для подтверждения регистрации
+http://{{ domain }}{% url 'users:password_confirm' uidb64=uid token=token %}
+{% endautoescape %}

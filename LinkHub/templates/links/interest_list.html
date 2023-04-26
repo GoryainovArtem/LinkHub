@@ -4,7 +4,7 @@
 {% endblock %}
 {% block content %}
   <h3 class="mb-3"> Проекты на тему: "{{ theme.name }}"</h3>
-  {% for project in projects %}
+  {% for project in page_obj %}
     <div class="media mb-4 project_head" style="background-color: #F5F5F5">
       <div class="media-body">
         <div class="media_inner_container" >
@@ -29,4 +29,5 @@
       </div>
     </div>
   {% endfor %}
+  {% include 'links/paginator.html' %}
 {% endblock %}
