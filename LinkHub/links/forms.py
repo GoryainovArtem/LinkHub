@@ -24,7 +24,9 @@ class ProjectForm(BaseFormWithText):
 class ProjectAdminForm(BaseFormWithText):
     class Meta:
         model = Project
-        fields = ('title', 'description', 'theme', 'main_admin', 'editor', 'is_private')
+        fields = ('title', 'description', 'theme', 'main_admin', 'editor', 'is_private', 'source_amount',
+                  'links_percentage', 'image_percentage', 'video_percentage', 'document_percentage',
+                  'text_percentage', 'stars_amount')
 
 
 class LinkForm(BaseFormWithText):
