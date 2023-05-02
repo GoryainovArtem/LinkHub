@@ -100,20 +100,13 @@ def update_source_amount(sender, instance, **kwargs):
         project.links_percentage = links_percentage
         docs_percentage = utils.get_project_statistic_field_value(links, instance, 'document')
         project.links_documents = docs_percentage
-
     else:
         if old_instance.description != instance.description:
             links_descriptions.remove(old_instance.description)
             links_descriptions.append(instance.description)
-
             project.image_percentage = utils.count_image_percentage(links_descriptions)
             project.video_percentage = utils.count_video_percentage(links_descriptions)
-
-            text_percentage_list = [utils.count_text_percentage(link) for link in links_descriptions]
-            project.text_percentage = (sum(map(lambda x: x[0], text_percentage_list)) /
-                                       sum(map(lambda x: x[1], text_percentage_list))
-                                       )
-
+            project.text_percentage = utils.get_total_text_percentage(links_descriptions)
         if old_instance.url != instance.url:
             project.links_percentage = utils.get_project_statistic_field_value(links, instance, 'url')
         if old_instance.document != instance.document:
@@ -123,42 +116,23 @@ def update_source_amount(sender, instance, **kwargs):
 
 @receiver(signal=post_delete, sender=Link)
 def delete_source_amount(sender, instance, **kwargs):
-    print('Инстанс при удалении', instance)
+    """
+    Изменить статистические параметры модели при удалении информации об
+    источнике.
+    :param sender:
+    :param instance:
+    :param kwargs:
+    :return:
+    """
     project = instance.head.project
     project.source_amount = project.source_amount - 1
-
     links = Link.objects.filter(head__project=project)
-
     links_descriptions = list(links.values_list('description', flat=True))
-
     project.image_percentage = utils.count_image_percentage(links_descriptions)
     project.video_percentage = utils.count_video_percentage(links_descriptions)
-
-    text_percentage_list = [utils.count_text_percentage(link) for link in links_descriptions]
-    project.text_percentage = (sum(map(lambda x: x[0], text_percentage_list)) /
-                               sum(map(lambda x: x[1], text_percentage_list))
-                               )
-
-    links_urls = list(links.values_list('url', flat=True))
-    filtered_links_urls = list(filter(None, links_urls))
-    if len(links_urls) == 0:
-        project.links_percentage = 0
-    else:
-        project.links_percentage = len(filtered_links_urls) / len(links_urls)
-
-    links_documents = links.values_list('document', flat=True)
-    filtered_links_documents = list(filter(None, links_documents))
-    if len(links_documents) == 0:
-        project.links_documents = 0
-    else:
-        project.documents_percentage = len(filtered_links_documents) / len(links_documents)
-
-
-@receiver(signal=post_delete, sender=Link)
-def update_source_amount(**kwargs):
-    link = kwargs['instance']
-    project = link.head.project
-    project.source_amount = project.heads.values_list('links').count()
+    project.text_percentage = utils.get_total_text_percentage(links_descriptions)
+    project.links_percentage = utils.get_project_statistic_field_value(links, instance, 'url')
+    project.links_percentage = utils.get_project_statistic_field_value(links, instance, 'document')
     project.save()
 
 
