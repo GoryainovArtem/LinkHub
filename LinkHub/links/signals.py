@@ -93,6 +93,7 @@ def update_source_amount(sender, instance, **kwargs):
     except:
         old_instance = None
     project.source_amount = project.heads.values_list('links').count() + bool(not old_instance)
+    project.stars_amount = project.stars.count()
     print('Старье:', old_instance)
     if old_instance is None:
         print('Description was changed')
@@ -125,43 +126,40 @@ def update_source_amount(sender, instance, **kwargs):
 
         project.stars_amount = project.stars.count()
         print('Количество звезд:', project.stars.count())
+    else:
+        if old_instance.description != instance.description:
+            print('Description was changed')
+            links_descriptions = list(links.values_list('description', flat=True))
+            links_descriptions.remove(old_instance.description)
+            links_descriptions.append(instance.description)
+
+            project.image_percentage = count_image_percentage(links_descriptions)
+            project.video_percentage = count_video_percentage(links_descriptions)
+
+            text_percentage_list = [count_text_percentage(link) for link in links_descriptions]
+            project.text_percentage = (sum(map(lambda x: x[0], text_percentage_list)) /
+                                       sum(map(lambda x: x[1], text_percentage_list))
+                                       )
+
+        if old_instance.url != instance.url:
+            links_urls = list(links.values_list('url', flat=True))
+            links_urls.remove(old_instance.url)
+            links_urls.append(instance.url)
+            filtered_links_urls = list(filter(None, links_urls))
+            if len(links_urls) == 0:
+                project.links_percentage = 0
+            else:
+                project.links_percentage = len(filtered_links_urls) / len(links_urls)
+
+        if old_instance.document != instance.document:
+            print('Document was changed')
+            links_documents = links.values_list('document', flat=True)
+            filtered_links_documents = list(filter(None, links_documents))
+            if len(links_documents) == 0:
+                project.links_documents = 0
+            else:
+                project.links_documents = len(filtered_links_documents) / len(links_documents)
     project.save()
-    # else:
-    #     if old_instance.description != instance.description:
-    #         print('Description was changed')
-    #         links_descriptions = links.values_list('description', flat=True)
-    #         # links_descriptions.remove(old_instance.description)
-    #         # links_descriptions.append(instance.description)
-    #         project.image_percentage = count_image_percentage(links_descriptions)
-    #         project.video_percentage = count_video_percentage(links_descriptions)
-    #
-    #         text_percentage_list = [count_text_percentage(link) for link in links_descriptions]
-    #         project.text_percentage = (sum(map(lambda x: x[0], text_percentage_list)) /
-    #                                    sum(map(lambda x: x[1], text_percentage_list))
-    #                                    )
-    #
-    #     if old_instance.url != instance.url:
-    #         print('Url was changed')
-    #         print('Новый url', instance.url)
-    #         print('Старый url', old_instance.url)
-    #         links_urls = list(links.values_list('url', flat=True))
-    #         print('урлы:', links_urls)
-    #         links_urls.remove(old_instance.url)
-    #         links_urls.append(instance.url)
-    #         filtered_links_urls = list(filter(None, links_urls))
-    #         print(filtered_links_urls)
-    #         print(len(filtered_links_urls) / len(links_urls))
-    #         project.links_percentage = len(filtered_links_urls) / len(links_urls)
-    #
-    #     if old_instance.document != instance.document:
-    #         print('Document was changed')
-    #         links_documents = links.values_list('document', flat=True)
-    #         filtered_links_documents = list(filter(None, links_documents))
-    #         project.links_documents = len(filtered_links_documents) / len(links_documents)
-    #
-    #     project.stars_amount = project.stars.count()
-    #     print('Количество звезд:', project.stars.count())
-    #     project.save()
 
 
     #changed_link = kwargs['instance']
