@@ -1,11 +1,7 @@
 from django import forms
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
-from .models import Project, Link, Head, Theme, \
-    ProxyProjectOrderedDesc, ProxyProjectOrderedStars, \
-    Comment
-
-from users.models import CustomUser
+from .models import Project, Link, Head, Theme, Comment
 
 
 class BaseFormWithText(forms.ModelForm):

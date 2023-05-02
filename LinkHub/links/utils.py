@@ -15,6 +15,12 @@ def count_text_percentage(s: str):
 
 
 def closure(pattern):
+    """
+    Замыкание для поиска в тексте описания источника
+    информации заданного паттерна.
+    :param pattern:
+    :return:
+    """
     def wrapper(s):
         search_result = re.findall(pattern, s)
         return bool(search_result)

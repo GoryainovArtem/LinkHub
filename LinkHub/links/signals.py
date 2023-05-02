@@ -1,14 +1,9 @@
-import re
-from bs4 import BeautifulSoup
-
-from django.db.models import Max, Sum, Q
 from django.dispatch import receiver
 from django.db.models.signals import pre_delete, post_save, post_delete, pre_save, m2m_changed
-from django.forms import model_to_dict
 from django.shortcuts import get_object_or_404
 
 from . import utils
-from .models import Head, Project, Link, UserProjectStatistics, Star
+from .models import Project, Link, UserProjectStatistics
 from users.models import CustomUser
 
 
@@ -136,47 +131,38 @@ def delete_source_amount(sender, instance, **kwargs):
     project.save()
 
 
-@receiver(post_save, sender=Star)
-def add_like_project_info(sender, instance,  **kwargs):
+@receiver(m2m_changed, sender=Project.liked_users.through)
+def add_liked_project_info(sender, instance, action, **kwargs):
     """
-    Изменить значение поля is_liked_project в модели
-    UserProjectStatistics на True, если пользователь поставил
-    звезду проекту
-    :param sender:
+    Изменить значение поля is_liked_project для понравившегося
+    проекта.
     :param instance:
+    :param sender:
+    :param action:
     :param kwargs:
     :return:
     """
-    project = Project.objects.get(id=instance.project.id)
-    project.stars_amount += 1
-    project.save()
-    if not UserProjectStatistics.objects.filter(
-            project=instance.project,
-            user=instance.liked).exists():
-        UserProjectStatistics.objects.create(project=instance.project,
-                                             user=instance.liked,
-                                             is_liked_project=True)
-    else:
-        info = UserProjectStatistics.objects.get(project=instance.project,
-                                                 user=instance.liked)
-        info.is_liked_project = True
-        info.save()
+    if action == 'pre_add':
+        for pk in kwargs['pk_set']:
+            user = get_object_or_404(CustomUser, id=pk)
+            if not UserProjectStatistics.objects.filter(project=instance,
+                                                        user=user).exists():
+                UserProjectStatistics.objects.create(user=user,
+                                                     project=instance,
+                                                     is_liked_project=True)
+            else:
+                info = UserProjectStatistics.objects.get(project=instance,
+                                                         user=user)
+                info.is_liked_project = True
+                info.save()
 
-
-@receiver(pre_delete, sender=Star)
-def remove_like_project_info(sender, instance, **kwargs):
-    """Изменить значение поля is_liked_project в модели
-    UserProjectStatistics на False, если пользователь убрал звезду у
-    проекта"""
-    project = Project.objects.get(id=instance.project.id)
-    project.stars_amount -= 1
-    project.save()
-    if UserProjectStatistics.objects.filter(project=instance.project,
-                                            user=instance.liked).exists():
-        info = UserProjectStatistics.objects.get(project=instance.project,
-                                                 user=instance.liked)
-        info.is_liked_project = False
-        info.save()
+    elif action == 'pre_remove':
+        for pk in kwargs['pk_set']:
+            user = get_object_or_404(CustomUser, id=pk)
+            info = UserProjectStatistics.objects.get(project=instance,
+                                                     user=user)
+            info.is_liked_project = False
+            info.save()
 
 
 @receiver(m2m_changed, sender=Project.saved_users.through)
@@ -204,7 +190,7 @@ def add_save_project_info(sender, instance, action, **kwargs):
                 info.is_saved_project = True
                 info.save()
 
-    if action == 'pre_remove':
+    elif action == 'pre_remove':
         for pk in kwargs['pk_set']:
             project = get_object_or_404(Project, id=pk)
             info = UserProjectStatistics.objects.get(project=project,

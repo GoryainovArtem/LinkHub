@@ -67,7 +67,7 @@
               </form>
             {% endif %}
           {% endif %}
-          <span class="likes_title">Понравился проект: {{ project.stars.count }} </span>
+          <span class="likes_title">Понравился проект: {{ project.liked_users.count }} </span>
           <div>
             <form action="{% if is_saved %}
                             {% url 'saved:delete_session' project.id %}

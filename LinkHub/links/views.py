@@ -9,18 +9,16 @@ from sklearn.preprocessing import MultiLabelBinarizer
 
 
 from django.conf import settings
-from django.db.models import Q, Count
+from django.db.models import Q
 from django import forms
-from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, View, UpdateView, DeleteView
 
 from .color_generator import color_generator
-from .models import Project, Head, Link, Comment, Star, \
-    Theme, ProxyProjectOrderedDesc, ProxyProjectOrderedStars, \
-    UserProjectStatistics
+from .models import Project, Head, Link, Comment, Theme, ProxyProjectOrderedDesc, \
+    ProxyProjectOrderedStars, UserProjectStatistics
 from .forms import ProjectForm, LinkForm, \
     CreateHeadForm, SearchForm,  SortedProjectsType, \
     CommentForm, GiveEditorRoleForm
@@ -105,9 +103,7 @@ class DetailedProject(DetailView):
         else:
             context['heads'] = project.heads.all()
         if self.request.user.is_authenticated:
-            context['is_liked'] = project.stars.filter(
-                liked=self.request.user
-            ).exists()
+            context['is_liked'] = self.request.user in project.liked_users.all()
             context['is_saved'] = project in self.request.user.saved_projects.all()
         else:
             session = self.request.session.get(settings.SAVED_SESSION_ID)
@@ -157,10 +153,7 @@ class LikeProject(View):
     def post(self, request, *args, **kwargs):
         user = self.request.user
         project = get_object_or_404(Project, id=kwargs['id'])
-        Star.objects.get_or_create(
-            project=project,
-            liked=user
-        )
+        project.liked_users.add(user)
         return redirect('links:project_detailed', id=kwargs['id'])
 
 
@@ -170,8 +163,7 @@ class DenyLike(View):
     def post(self, request, *args, **kwargs):
         user = request.user
         project = get_object_or_404(Project, id=kwargs['id'])
-        star = Star.objects.get(liked=user, project=project)
-        star.delete()
+        project.liked_users.remove(user)
         return redirect('links:project_detailed', id=kwargs['id'])
 
 
@@ -274,8 +266,6 @@ class Profile(DetailView):
             context['projects_amount'] = (Project.objects.filter(is_private=False
                                                                  ).filter(
                 Q(main_admin=user) | Q(editor=user)).count()
-                    # user.created_projects.filter(is_private=False).count() +
-                    #                       user.projects_edit.filter(is_private=False).count()
                                           )
         return context
 
@@ -376,13 +366,13 @@ class AddComment(View):
         return redirect('links:link', id=kwargs['id'])
 
 
-class LikedProjects(ListView):
-    template_name = 'links/recent.html'
-    model = Star
-    context_object_name = 'projects'
-
-    def get_queryset(self):
-        return Project.objects.filter(stars__liked=self.request.user)
+# class LikedProjects(ListView):
+#     template_name = 'links/recent.html'
+#     model = Star
+#     context_object_name = 'projects'
+#
+#     def get_queryset(self):
+#         return Project.objects.filter(stars__liked=self.request.user)
 
 
 class SavedProjects(ListView):
@@ -569,6 +559,3 @@ class HeadDelete(DeleteView):
                                 'id': self.object.project.id
                             }
                             )
-
-
-

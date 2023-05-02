@@ -24,7 +24,6 @@ urlpatterns = [
     path('projects/<int:id>/edit/', views.ProjectEdit.as_view(), name='edit_project'),
     path('links/<int:id>/delete/', views.LinkDelete.as_view(), name='link_delete'),
     path('links/<int:id>/add-comment/', views.AddComment.as_view(), name='add_comment'),
-    path('users/<int:id>/projects/liked/', views.LikedProjects.as_view(), name='liked_projects'),
     path('projects/saved/', views.SavedProjects.as_view(), name='saved_projects'),
     path('users/<int:id>/projects/feed/', views.Feed.as_view(), name='feed'),
     path('users/<int:editor_id>/give_editor_role/',

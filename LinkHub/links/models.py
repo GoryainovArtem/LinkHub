@@ -58,6 +58,7 @@ class Project(BaseClass):
                                                'private - доступен для всех пользователей')
 
     saved_users = models.ManyToManyField(CustomUser, related_name='saved_projects')
+    liked_users = models.ManyToManyField(CustomUser, related_name='liked_users')
 
     source_amount = models.IntegerField(default=0)
     links_percentage = models.FloatField(default=0)
@@ -175,17 +176,17 @@ class Comment(models.Model):
         return self.text[:self.DISPLAY_TEXT_LETTERS_AMOUNT]
 
 
-class Star(models.Model):
-    project = models.ForeignKey(Project,
-                                on_delete=models.CASCADE,
-                                related_name='stars')
-    liked = models.ForeignKey(CustomUser,
-                              on_delete=models.CASCADE,
-                              related_name='stars')
-
-    class Meta:
-        verbose_name = 'Звезда'
-        verbose_name_plural = 'Звезды'
+# class Star(models.Model):
+#     project = models.ForeignKey(Project,
+#                                 on_delete=models.CASCADE,
+#                                 related_name='stars')
+#     liked = models.ForeignKey(CustomUser,
+#                               on_delete=models.CASCADE,
+#                               related_name='stars')
+#
+#     class Meta:
+#         verbose_name = 'Звезда'
+#         verbose_name_plural = 'Звезды'
 
 
 class UserProjectStatistics(models.Model):
