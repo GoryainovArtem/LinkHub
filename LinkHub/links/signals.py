@@ -5,6 +5,7 @@ from django.db.models import Max, Sum, Q
 from django.dispatch import receiver
 from django.db.models.signals import pre_delete, post_save, post_delete, pre_save, m2m_changed
 from django.forms import model_to_dict
+from django.shortcuts import get_object_or_404
 
 from .models import Head, Project, Link, UserProjectStatistics, Star
 from users.models import CustomUser
@@ -55,12 +56,12 @@ def count_video_percentage(lst):
     return sum(has_video_list) / len(has_video_list)
 
 
-@receiver(signal=post_save, sender=Project)
-def create_user_project_statics(sender, instance, created, **kwargs):
-    if created:
-        user = instance.main_admin
-        UserProjectStatistics.objects.create(project=instance, user=user,
-                                             is_created_project=True)
+# @receiver(signal=post_save, sender=Project)
+# def create_user_project_statics(sender, instance, created, **kwargs):
+#     if created:
+#         user = instance.main_admin
+#         UserProjectStatistics.objects.create(project=instance, user=user,
+#                                              is_created_project=True)
 
 
 @receiver(m2m_changed, sender=Project.editor.through)
@@ -75,12 +76,12 @@ def my_m2m_changed_receiver(sender, instance, action, **kwargs):
                 UserProjectStatistics.objects.create(project=instance, user=editor_instance,
                                                      is_created_project=True)
     elif action == 'pre_remove':
-        print('Objects were removed from the ManyToMany field')
-        print('Сущность', kwargs['pk_set'])
         for editor_id in kwargs['pk_set']:
             editor_instance = CustomUser.objects.get(id=editor_id)
-            UserProjectStatistics.objects.filter(project=instance,
-                                                 user=editor_instance).delete()
+            info = UserProjectStatistics.objects.get(project=instance,
+                                                 user=editor_instance)
+            info.is_created = False
+            info.save()
 
 
 # @receiver(signal=pre_save, sender=Link)
@@ -270,3 +271,28 @@ def remove_like_project_info(sender, instance, **kwargs):
                                                  user=instance.liked)
         info.is_liked_project = False
         info.save()
+
+
+@receiver(m2m_changed, sender=Project.saved_users.through)
+def add_save_project_info(sender, instance, action, **kwargs):
+    if action == 'pre_add':
+        for pk in kwargs['pk_set']:
+            project = get_object_or_404(Project, id=pk)
+            if not UserProjectStatistics.objects.filter(project=project,
+                                                        user=instance).exists():
+                UserProjectStatistics.objects.create(user=instance,
+                                                     project=project,
+                                                     is_saved_project=True)
+            else:
+                info = UserProjectStatistics.objects.get(project=project,
+                                                         user=instance)
+                info.is_saved_project = True
+                info.save()
+
+    if action == 'pre_remove':
+        for pk in kwargs['pk_set']:
+            project = get_object_or_404(Project, id=pk)
+            info = UserProjectStatistics.objects.get(project=project,
+                                                     user=instance)
+            info.is_saved_project = False
+            info.save()

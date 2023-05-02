@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
   <h3> Опубликованные проекты </h3>
-  <div style="background: orange" class="">
+  <div class="">
     <form method="get"  class="my-4">
       {% csrf_token %}
       {% for field in search_form %}

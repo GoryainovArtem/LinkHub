@@ -204,7 +204,6 @@ def link(request, id):
     """Класс для источника информации."""
     link = get_object_or_404(Link, id=id)
     comments = link.comments.select_related('author')
-    print('Комменты:', comments)
     context = {
         'comments': comments,
         'link': link,
@@ -223,7 +222,6 @@ class CreateLink(CreateView):
     pk_url_kwarg = 'id'
 
     def form_valid(self, form):
-        print('ВСЕ', self.kwargs)
         head = get_object_or_404(Head, id=self.kwargs.get('id'))
         form.instance.head = head
         return super().form_valid(form)
@@ -246,7 +244,6 @@ class CreateHead(CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        print('Продолжаем')
         return reverse_lazy('links:project_detailed',
                             kwargs={'id': self.kwargs['id']})
 
@@ -290,7 +287,6 @@ class InterestList(ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data()
-        print('Кварги', self.kwargs)
         theme = get_object_or_404(Theme, id=self.kwargs['pk'])
         context['theme'] = theme
         return context
@@ -317,8 +313,6 @@ class EditProfile(UpdateView):
     pk_url_kwarg = 'id'
 
     def get_success_url(self):
-        print('Такой пользователь:',
-              self.object)
         return reverse_lazy('links:profile', args=(self.object.id, ))
 
 
@@ -364,7 +358,6 @@ class LinkEdit(UpdateView):
         return context
 
     def get_success_url(self):
-        print('Делаю изменение ссылки')
         return reverse_lazy('links:head',
                             kwargs={
                                 'id': self.object.head.id})
@@ -389,7 +382,6 @@ class LikedProjects(ListView):
     context_object_name = 'projects'
 
     def get_queryset(self):
-        print('Проекты:',  Star.objects.filter(liked=self.request.user))
         return Project.objects.filter(stars__liked=self.request.user)
 
 
@@ -412,10 +404,6 @@ class SavedProjects(ListView):
             return self.request.user.saved_projects.all()
         saved_list = self.request.session.get(settings.SAVED_SESSION_ID, [])
         return Project.objects.filter(id__in=saved_list)
-        #return self.request.user.prefetch_related(saved_projects).all()
-        # if self.request.session.get(settings.SAVED_SESSION_ID):
-        #     saved_list = self.request.session.get(settings.SAVED_SESSION_ID)
-        #     return Project.objects.filter(id__in=saved_list)
 
 
 class Feed(ListView):
@@ -444,7 +432,7 @@ class Feed(ListView):
                             'text_percentage', 'stars_amount']
             if is_random:
                 params_names.append('id')
-            themes_list = [{'themes': list(Project.objects.get(id=id).theme.all())} for id in project_id_list]
+            themes_list = [{'themes': list(Project.objects.get(id=id).theme.all().values_list('name', flat=True))} for id in project_id_list]
             projects_params = Project.objects.filter(
                 id__in=project_id_list).values(*params_names)
             for l_1, l_2 in zip(list(projects_params), themes_list):
@@ -474,7 +462,8 @@ class Feed(ListView):
             random_projects_df = pd.DataFrame(random_projects_dataset)
             random_projects_id_values = random_projects_df.id.values
             random_projects_df.drop(['id'], axis=1, inplace=True)
-
+            # user_df.to_csv('C:\\Users\\Home PC\\Desktop\\html-templates\\user.csv')
+            # random_projects_df.to_csv('C:\\Users\\Home PC\\Desktop\\html-templates\\random.csv')
             mlb = MultiLabelBinarizer()
             user_df = user_df.join(pd.DataFrame(mlb.fit_transform(user_df.pop('themes')),
                                                 columns=mlb.classes_,
@@ -493,7 +482,12 @@ class Feed(ListView):
             top_projects = list(random_projects_df.nlargest(2, 'avg_corr').id.values)
             return top_projects
 
-        us = UserProjectStatistics.objects.filter(user=self.request.user)
+        user_projects_criterions = Q(user=self.request.user) & (
+                Q(is_created_project=True) |
+                Q(is_liked_project=True) |
+                Q(is_saved_project=True) |
+                Q(views_amount__gt=5))
+        us = UserProjectStatistics.objects.filter(user_projects_criterions )
         project_ids = us.filter().values_list('project', flat=True)
         if us.count() < 0:
             return ProxyProjectOrderedStars.objects.all().exclude(id__in=us.values_list('project'))
