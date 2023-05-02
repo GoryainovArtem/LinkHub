@@ -117,7 +117,8 @@ def update_source_amount(sender, instance, **kwargs):
             project.links_percentage = len(filtered_links_urls) / len(links_urls)
 
         print('Document was changed')
-        links_documents = links.values_list('document', flat=True)
+        links_documents = list(links.values_list('document', flat=True))
+        links_documents.append(instance.document)
         filtered_links_documents = list(filter(None, links_documents))
         if len(links_documents) == 0:
             project.links_documents = 0
@@ -154,36 +155,47 @@ def update_source_amount(sender, instance, **kwargs):
         if old_instance.document != instance.document:
             print('Document was changed')
             links_documents = links.values_list('document', flat=True)
+            links_documents.remove(old_instance.document)
+            links_documents.append(instance.document)
             filtered_links_documents = list(filter(None, links_documents))
             if len(links_documents) == 0:
                 project.links_documents = 0
             else:
-                project.links_documents = len(filtered_links_documents) / len(links_documents)
+                project.documents_percentage = len(filtered_links_documents) / len(links_documents)
     project.save()
 
 
-    #changed_link = kwargs['instance']
+@receiver(signal=post_delete, sender=Link)
+def delete_source_amount(sender, instance, **kwargs):
+    print('Инстанс при удалении', instance)
+    project = instance.head.project
+    project.source_amount = project.source_amount - 1
 
-    # project = changed_link.head.project
-    # project.source_amount = project.heads.values_list('links').count()
-    # links = Link.objects.filter(head__project=project)
+    links = Link.objects.filter(head__project=project)
 
-    # links_descriptions = links.values_list('description', flat=True)
-    # project.image_percentage = count_image_percentage(links_descriptions)
-    # project.video_percentage = count_video_percentage(links_descriptions)
+    links_descriptions = list(links.values_list('description', flat=True))
 
-    # links_urls = links.values_list('url', flat=True)
-    # filtered_links_urls = list(filter(None, links_urls))
-    # project.links_percentage = len(filtered_links_urls) / len(links_urls)
-    #
-    # links_documents = links.values_list('document', flat=True)
-    # filtered_links_documents = list(filter(None, links_documents))
-    # project.links_documents = len(filtered_links_documents) / len(links_documents)
+    project.image_percentage = count_image_percentage(links_descriptions)
+    project.video_percentage = count_video_percentage(links_descriptions)
 
-    # text_percentage_list = [count_text_percentage(link) for link in links_descriptions]
-    # project.text_percentage = (sum(map(lambda x: x[0], text_percentage_list)) /
-    #                            sum(map(lambda x: x[1], text_percentage_list))
-    #                            )
+    text_percentage_list = [count_text_percentage(link) for link in links_descriptions]
+    project.text_percentage = (sum(map(lambda x: x[0], text_percentage_list)) /
+                               sum(map(lambda x: x[1], text_percentage_list))
+                               )
+
+    links_urls = list(links.values_list('url', flat=True))
+    filtered_links_urls = list(filter(None, links_urls))
+    if len(links_urls) == 0:
+        project.links_percentage = 0
+    else:
+        project.links_percentage = len(filtered_links_urls) / len(links_urls)
+
+    links_documents = links.values_list('document', flat=True)
+    filtered_links_documents = list(filter(None, links_documents))
+    if len(links_documents) == 0:
+        project.links_documents = 0
+    else:
+        project.documents_percentage = len(filtered_links_documents) / len(links_documents)
 
 
 @receiver(signal=post_delete, sender=Link)
