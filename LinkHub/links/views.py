@@ -4,6 +4,7 @@ from datetime import timedelta
 import pandas as pd
 from random import sample
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from sklearn.preprocessing import MultiLabelBinarizer
 
@@ -16,12 +17,12 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, View, UpdateView, DeleteView
 
-from .color_generator import color_generator
+from .mixins import HeadAuthorRequiredMixin, AuthorRequiredMixin, LinkAuthorRequiredMixin
 from .models import Project, Head, Link, Comment, Theme, ProxyProjectOrderedDesc, \
     ProxyProjectOrderedStars, UserProjectStatistics
 from .forms import ProjectForm, LinkForm, \
-    CreateHeadForm, SearchForm,  SortedProjectsType, \
-    CommentForm, GiveEditorRoleForm
+    CreateHeadForm, SearchForm, CommentForm, \
+    GiveEditorRoleForm
 
 from users.models import CustomUser
 from users.forms import EditProfileForm
@@ -39,13 +40,10 @@ class Index(ListView):
     queryset = Project.objects.all().filter(is_private=False)
 
     def get(self, request, *args, **kwargs):
-        """Сохранение фильтров поиска на странице в параметре сессии."""
 
         request_params = dict(self.request.GET)
         if 'page' in request_params:
             return super().get(request, *args, **kwargs)
-        # if 'csrfmiddlewaretoken' in request_params:
-        #     request_params.pop('csrfmiddlewaretoken')
         if request_params != self.request.session.get('selected_filters'):
             self.request.session['selected_filters'] = request_params
             self.request.modified = True
@@ -113,7 +111,7 @@ class DetailedProject(DetailView):
         return context
 
 
-class CreateProject(CreateView):
+class CreateProject(LoginRequiredMixin, CreateView):
     model = Project
     template_name = 'links/create_project.html'
     form_class = ProjectForm
@@ -126,7 +124,7 @@ class CreateProject(CreateView):
         return reverse_lazy('links:project_detailed', kwargs={'id': self.object.id})
 
 
-class RecentProjects(ListView):
+class RecentProjects(AuthorRequiredMixin, ListView):
     RECENTLY_EDIT_PROJECTS_AMOUNT = 5
     model = Project
     template_name = 'links/recent.html'
@@ -147,7 +145,7 @@ class RecentProjects(ListView):
             '-last_edit')[:self.RECENTLY_EDIT_PROJECTS_AMOUNT]
 
 
-class LikeProject(View):
+class LikeProject(LoginRequiredMixin, View):
     """Поставить проекту отметку 'Мне нравится'"""
 
     def post(self, request, *args, **kwargs):
@@ -157,7 +155,7 @@ class LikeProject(View):
         return redirect('links:project_detailed', id=kwargs['id'])
 
 
-class DenyLike(View):
+class DenyLike(LoginRequiredMixin, View):
     """Убрать у проекта отметку 'Мне нравится'."""
 
     def post(self, request, *args, **kwargs):
@@ -175,12 +173,12 @@ class DetailedHead(DetailView):
     context_object_name = 'head'
 
 
-class HeadEdit(UpdateView):
+class HeadEdit(HeadAuthorRequiredMixin, UpdateView):
     """Редактирование информации о разделе."""
     model = Head
     form_class = CreateHeadForm
     template_name = 'links/create_head.html'
-    pk_url_kwarg = 'id'
+    pk_url_kwarg = 'head_id'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
@@ -206,7 +204,7 @@ def link(request, id):
     return render(request, template, context)
 
 
-class CreateLink(CreateView):
+class CreateLink(LoginRequiredMixin, CreateView):
     """Создать источник информации."""
     model = Link
     template_name = 'links/create_link.html'
@@ -224,7 +222,7 @@ class CreateLink(CreateView):
                                 'id': self.kwargs.get('id')})
 
 
-class CreateHead(CreateView):
+class CreateHead(LoginRequiredMixin, CreateView):
     model = Head
     template_name = 'links/create_head.html'
     form_class = CreateHeadForm
@@ -285,18 +283,7 @@ class InterestList(ListView):
         return Project.objects.filter(theme__id=self.kwargs['pk'])
 
 
-def interest(request, interest):
-    theme_obj = get_object_or_404(Theme, name=interest)
-    template = 'links/interest_list.html'
-    projects = Project.objects.filter(theme=theme_obj)
-    context = {
-        'theme': theme_obj,
-        'projects': projects,
-    }
-    return render(request, template, context)
-
-
-class EditProfile(UpdateView):
+class EditProfile(LoginRequiredMixin, UpdateView):
     model = CustomUser
     form_class = EditProfileForm
     template_name = 'links/edit_profile.html'
@@ -306,7 +293,7 @@ class EditProfile(UpdateView):
         return reverse_lazy('links:profile', args=(self.object.id, ))
 
 
-class ProjectEdit(UpdateView):
+class ProjectEdit(LoginRequiredMixin, UpdateView):
     model = Project
     template_name = 'links/create_project.html'
     form_class = ProjectForm
@@ -323,10 +310,10 @@ class ProjectEdit(UpdateView):
                                 'id': self.object.id})
 
 
-class LinkDelete(DeleteView):
+class LinkDelete(LinkAuthorRequiredMixin, DeleteView):
     model = Link
     template_name = 'links/delete_confirm.html'
-    pk_url_kwarg = 'id'
+    pk_url_kwarg = 'link_id'
 
     def get_success_url(self):
         return reverse_lazy('links:head',
@@ -336,11 +323,11 @@ class LinkDelete(DeleteView):
                             )
 
 
-class LinkEdit(UpdateView):
+class LinkEdit(LinkAuthorRequiredMixin, UpdateView):
     model = Link
     form_class = LinkForm
     template_name = 'links/create_link.html'
-    pk_url_kwarg = 'id'
+    pk_url_kwarg = 'link_id'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
@@ -353,7 +340,7 @@ class LinkEdit(UpdateView):
                                 'id': self.object.head.id})
 
 
-class AddComment(View):
+class AddComment(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         text = request.POST.get('text')
         user = request.user
@@ -364,15 +351,6 @@ class AddComment(View):
                                )
 
         return redirect('links:link', id=kwargs['id'])
-
-
-# class LikedProjects(ListView):
-#     template_name = 'links/recent.html'
-#     model = Star
-#     context_object_name = 'projects'
-#
-#     def get_queryset(self):
-#         return Project.objects.filter(stars__liked=self.request.user)
 
 
 class SavedProjects(ListView):
@@ -396,7 +374,7 @@ class SavedProjects(ListView):
         return Project.objects.filter(id__in=saved_list)
 
 
-class Feed(ListView):
+class Feed(LoginRequiredMixin, ListView):
     model = Project
     template_name = 'links/recent.html'
     page_kwarg = 'id'
@@ -489,7 +467,7 @@ class Feed(ListView):
             return Project.objects.filter(id__in=top_projects)
 
 
-class GiveEditorRole(View):
+class GiveEditorRole(LoginRequiredMixin, View):
     """Назначить пользователя редактором проекта"""
 
     def get(self, request, *args, **kwargs):
@@ -521,7 +499,7 @@ class GiveEditorRole(View):
         return redirect('links:profile', id=kwargs['editor_id'])
 
 
-class DenyEditorRole(View):
+class DenyEditorRole(LoginRequiredMixin, View):
     """Снять с пользователя роль редактора проекта"""
     def get(self, request, *args, **kwargs):
         editor = get_object_or_404(CustomUser, id=kwargs['editor_id'])
@@ -548,10 +526,10 @@ class DenyEditorRole(View):
         return redirect('links:profile', kwargs['editor_id'])
 
 
-class HeadDelete(DeleteView):
+class HeadDelete(HeadAuthorRequiredMixin, DeleteView):
     model = Head
     template_name = 'links/delete_confirm.html'
-    pk_url_kwarg = 'id'
+    pk_url_kwarg = 'head_id'
 
     def get_success_url(self):
         return reverse_lazy('links:project_detailed',

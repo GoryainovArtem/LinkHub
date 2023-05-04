@@ -84,7 +84,7 @@ def update_source_amount(sender, instance, **kwargs):
     except:
         old_instance = None
     project.source_amount = project.heads.values_list('links').count() + bool(not old_instance)
-    project.stars_amount = project.stars.count()
+    project.stars_amount = project.liked_users.count()
     links_descriptions = list(links.values_list('description', flat=True))
     if old_instance is None:
         links_descriptions.append(instance.description)

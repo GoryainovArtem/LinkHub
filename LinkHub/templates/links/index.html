@@ -4,9 +4,10 @@
   Главная страница
 {% endblock %}
 {% block content %}
+  {% include 'includes/messages.html' %}
   <h3> Опубликованные проекты </h3>
-  <div class="">
-    <form method="get"  class="my-4">
+  <div>
+    <form method="get"  class="mt-4">
       {% csrf_token %}
       {% for field in search_form %}
         {{ field|addclass:'search_line' }}
@@ -14,7 +15,7 @@
     <button type="submit" class="btn btn-primary">Искать</button>
   </form>
   </div>
-  <form method="get" class="my-4">
+  <form method="get" class="search_params_form_wrapper">
     {% csrf_token %}
     <ul>
       {% for theme in view.get_themes %}

@@ -242,3 +242,7 @@ main {
 .select_container {
   height: 30px;
 }
+
+.search_params_form_wrapper {
+  margin-top: 40px;
+}
