@@ -38,7 +38,7 @@ class Project(BaseClass):
     theme = models.ManyToManyField(Theme,
                                    verbose_name='Тематика',
                                    related_name='projects',
-                                   blank=True, null=True,
+                                   blank=True,
                                    help_text='Выберите тематику проекта. Для выбора нескольких значений зажмите Alt.')
     main_admin = models.ForeignKey(CustomUser,
                                    on_delete=models.DO_NOTHING,
@@ -48,7 +48,7 @@ class Project(BaseClass):
     editor = models.ManyToManyField(CustomUser,
                                     verbose_name='Редакторы',
                                     related_name='projects_edit',
-                                    blank=True, null=True,
+                                    blank=True
                                     )
 
     is_private = models.BooleanField('Тип проекта', default=False,

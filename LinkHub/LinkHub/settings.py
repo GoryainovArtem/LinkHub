@@ -138,6 +138,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'), ]
 
 CKEDITOR_UPLOAD_PATH = 'uploads/'
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 CKEDITOR_SETTINGS = {
     'autoParagraph': False

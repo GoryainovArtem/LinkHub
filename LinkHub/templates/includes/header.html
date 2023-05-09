@@ -24,7 +24,7 @@
       {% if user.is_authenticated %}
       <li class="nav-item">
         <a class="nav-link"
-          href="{% url 'links:recent_projects' user.username %}">Недавние</a>
+          href="{% url 'links:recent_projects' %}">Недавние</a>
       </li>
       {% endif %}
       {% if user.is_authenticated %}

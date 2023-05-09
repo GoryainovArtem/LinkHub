@@ -124,7 +124,7 @@ class CreateProject(LoginRequiredMixin, CreateView):
         return reverse_lazy('links:project_detailed', kwargs={'id': self.object.id})
 
 
-class RecentProjects(AuthorRequiredMixin, ListView):
+class RecentProjects(LoginRequiredMixin, ListView):
     RECENTLY_EDIT_PROJECTS_AMOUNT = 5
     model = Project
     template_name = 'links/recent.html'
