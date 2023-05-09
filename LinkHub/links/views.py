@@ -125,24 +125,43 @@ class CreateProject(LoginRequiredMixin, CreateView):
 
 
 class RecentProjects(LoginRequiredMixin, ListView):
+    """
+    Получить список из 5 проектов, которые были изменены пользователем в течении
+    последних 3х дней.
+    """
     RECENTLY_EDIT_PROJECTS_AMOUNT = 5
     model = Project
     template_name = 'links/recent.html'
     context_object_name = 'projects'
 
+    def __check_project_edit(self, project):
+        if project.last_edit > timezone.now() - timedelta(days=3):
+            return True
+        for head in project.heads.all():
+            if head.last_edit > timezone.now() - timedelta(days=3):
+                return True
+            for link in head.links.all():
+                if link.last_edit > timezone.now() - timedelta(days=3):
+                    return True
+        return False
+
+    def __get_page_content(self):
+        user = self.request.user
+        edited_projects_list = []
+        criterions = Q(main_admin=user) | Q(editor=user)
+        for project in Project.objects.filter(criterions):
+            if self.__check_project_edit(project):
+                edited_projects_list.append(project)
+        return edited_projects_list
+
     def get_context_data(self, *, object_list=None, **kwargs):
         content = super().get_context_data()
-        content['have_content'] = True
+        content['have_content'] = self.__get_page_content()
         content['page_title'] = 'Проекты, с которыми вы недавно работали:'
         return content
 
     def get_queryset(self):
-        user = self.request.user
-        criterions = Q(main_admin=user) | Q(editor=user)
-        return Project.objects.filter(
-            criterions
-        ).filter(last_edit__gte=timezone.now() - timedelta(days=3)).order_by(
-            '-last_edit')[:self.RECENTLY_EDIT_PROJECTS_AMOUNT]
+        return self.__get_page_content()
 
 
 class LikeProject(LoginRequiredMixin, View):
@@ -251,20 +270,12 @@ class Profile(DetailView):
         context = super().get_context_data()
         context['mart'] = ProxyProjectOrderedStars.objects.filter(
             search_criterions)[:self.MART_ELEMENTS_AMOUNT]
-        if self.request.user.is_authenticated:
-            context['is_editor'] = self.request.user.created_projects.filter(editor=user)
         if self.request.user == user:
-            context['projects'] = ProxyProjectOrderedStars.objects.filter(search_criterions)
-            context['projects_amount'] = Project.objects.filter(
-                Q(main_admin=user) | Q(editor=user)).count()
+            context['projects'] = ProxyProjectOrderedStars.objects.filter(search_criterions).distinct()
         else:
             context['projects'] = ProxyProjectOrderedStars.objects.filter(search_criterions).filter(
                 is_private=False
             )
-            context['projects_amount'] = (Project.objects.filter(is_private=False
-                                                                 ).filter(
-                Q(main_admin=user) | Q(editor=user)).count()
-                                          )
         return context
 
 
@@ -283,7 +294,7 @@ class InterestList(ListView):
         return Project.objects.filter(theme__id=self.kwargs['pk'])
 
 
-class EditProfile(LoginRequiredMixin, UpdateView):
+class EditProfile(AuthorRequiredMixin, UpdateView):
     model = CustomUser
     form_class = EditProfileForm
     template_name = 'links/edit_profile.html'
@@ -476,7 +487,7 @@ class GiveEditorRole(LoginRequiredMixin, View):
         editor = get_object_or_404(CustomUser, id=kwargs['editor_id'])
         form = GiveEditorRoleForm()
         form.fields['id'] = forms.ModelChoiceField(
-            queryset=Project.objects.filter(main_admin=user),
+            queryset=Project.objects.filter(main_admin=user).exclude(editor=editor),
             label='Проект',
             help_text='Выберите проект, в котором хотите выдать '
                       'роль "Редактор" данному пользователю.'
