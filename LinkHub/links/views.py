@@ -23,6 +23,7 @@ from .models import Project, Head, Link, Comment, Theme, ProxyProjectOrderedDesc
 from .forms import ProjectForm, LinkForm, \
     CreateHeadForm, SearchForm, CommentForm, \
     GiveEditorRoleForm
+from .utils import log_user_activity
 
 from users.models import CustomUser
 from users.forms import EditProfileForm
@@ -82,14 +83,14 @@ class DetailedProject(DetailView):
     pk_url_kwarg = 'id'
     context_object_name = 'project'
 
-    def get_context_data(self, **kwargs):
-        logging.basicConfig(
-            level=logging.DEBUG,
-            filename=f'logs/pages/{self.request.user.id}.log',
-            format='%(asctime)s, %(levelname)s, %(name)s, %(message)s'
-        )
-        logging.debug(self.kwargs['id'])
+    def __get_project(self):
+        return get_object_or_404(
+            Project,
+            id=self.kwargs['id'])
 
+    def get_context_data(self, **kwargs):
+        log_user_activity(project=self.__get_project(),
+                          user=self.request.user)
         context = super().get_context_data()
         project = get_object_or_404(
             Project,
@@ -209,18 +210,19 @@ class HeadEdit(HeadAuthorRequiredMixin, UpdateView):
                             kwargs={'id': self.object.project.id})
 
 
-def link(request, id):
-    """Класс для источника информации."""
-    link = get_object_or_404(Link, id=id)
-    comments = link.comments.select_related('author')
-    context = {
-        'comments': comments,
-        'link': link,
-        'form': CommentForm(),
-        'comments': link.comments.all()
-    }
-    template = 'links/link_detail.html'
-    return render(request, template, context)
+class LinkDetailed(DetailView):
+    """Подробное описание источника информации."""
+    template_name = 'links/link_detail.html'
+    model = Link
+    pk_url_kwarg = 'id'
+    context_object_name = 'link'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        link = get_object_or_404(Link, id=self.kwargs['id'])
+        context['comments'] = link.comments.select_related('author')
+        context['form'] = CommentForm()
+        return context
 
 
 class CreateLink(LoginRequiredMixin, CreateView):
@@ -441,8 +443,6 @@ class Feed(LoginRequiredMixin, ListView):
             random_projects_df = pd.DataFrame(random_projects_dataset)
             random_projects_id_values = random_projects_df.id.values
             random_projects_df.drop(['id'], axis=1, inplace=True)
-            # user_df.to_csv('C:\\Users\\Home PC\\Desktop\\html-templates\\user.csv')
-            # random_projects_df.to_csv('C:\\Users\\Home PC\\Desktop\\html-templates\\random.csv')
             mlb = MultiLabelBinarizer()
             user_df = user_df.join(pd.DataFrame(mlb.fit_transform(user_df.pop('themes')),
                                                 columns=mlb.classes_,
@@ -465,7 +465,7 @@ class Feed(LoginRequiredMixin, ListView):
                 Q(is_created_project=True) |
                 Q(is_liked_project=True) |
                 Q(is_saved_project=True) |
-                Q(views_amount__gt=5))
+                (Q(views_amount__gt=7)) & Q(last_visit_date__gte=timezone.now() - timedelta(days=2)))
         us = UserProjectStatistics.objects.filter(user_projects_criterions )
         project_ids = us.filter().values_list('project', flat=True)
         if us.count() < 0:

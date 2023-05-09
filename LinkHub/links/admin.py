@@ -34,7 +34,7 @@ class CustomComment(admin.ModelAdmin):
 
 
 class CustomUserProjectStatistics(admin.ModelAdmin):
-    list_display = ('id', 'views_amount', 'is_created_project', 'is_liked_project',
+    list_display = ('id', 'views_amount', 'last_visit_date', 'is_created_project', 'is_liked_project',
                     'is_saved_project')
     list_editable = ('views_amount', 'is_created_project', 'is_liked_project',
                      'is_saved_project')

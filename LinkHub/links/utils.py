@@ -2,6 +2,8 @@ import re
 
 from bs4 import BeautifulSoup
 
+from links.models import UserProjectStatistics
+
 
 def count_text_percentage(s: str):
     """Вычислить количество текста в источнике."""
@@ -85,3 +87,17 @@ def get_project_statistic_field_value(links, instance, field_name: str, old_inst
     if len(field_values_list) == 0:
         return 0
     return len(filtered_links_documents) / len(field_values_list)
+
+
+def log_user_activity(project, user):
+    try:
+        log = UserProjectStatistics.objects.get(project=project,
+                                                user=user
+                                                )
+        log.views_amount += 1
+        log.save()
+    except Exception:
+        UserProjectStatistics.objects.create(project=project,
+                                             user=user,
+                                             views_amount=1
+                                             )

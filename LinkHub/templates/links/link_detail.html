@@ -55,7 +55,7 @@
           <h4 class="mb-4">Комментарии:</h4>
           {% for comment in comments %}
             <div class="card my-4">
-              <h5 class="card-header"><a href="">
+              <h5 class="card-header"><a href="{% url 'links:profile' comment.author.id %}">
                   {% thumbnail comment.author.profile_image "360x360" as im %}
                     <img width="65"  height="65" src="{{ im.url }}" alt="" />
                   {% endthumbnail %}
