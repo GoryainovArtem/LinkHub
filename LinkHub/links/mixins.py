@@ -2,10 +2,8 @@ from django.contrib import messages
 from django.contrib.auth.mixins import AccessMixin
 from django.shortcuts import redirect, get_object_or_404
 
-from .models import Head, Project, Link, CustomUser
-
-class ProjectAuthorRequiredMixin(AccessMixin):
-    ...
+from .models import Head, Project, Link
+from users.models import CustomUser
 
 
 class HeadAuthorRequiredMixin(AccessMixin):
@@ -47,4 +45,18 @@ class AuthorRequiredMixin(AccessMixin):
                                        'аккаунта. Вы были перенаправлены на главную страницу.')
                 return redirect('links:index')
         return super().dispatch(request, *args, **kwargs)
+
+
+class ProjectAuthorRequiredMixin(AccessMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        else:
+            project = get_object_or_404(Project, id=kwargs['id'])
+            if not (project.main_admin == request.user or project.editor == request.user):
+                messages.info(request, 'Редактирование профиля доступно только создателю '
+                                       'аккаунта. Вы были перенаправлены на главную страницу.')
+                return redirect('links:index')
+        return super().dispatch(request, *args, **kwargs)
+
 

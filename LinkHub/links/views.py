@@ -17,7 +17,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, View, UpdateView, DeleteView
 
-from .mixins import HeadAuthorRequiredMixin, AuthorRequiredMixin, LinkAuthorRequiredMixin
+from .mixins import HeadAuthorRequiredMixin, AuthorRequiredMixin, LinkAuthorRequiredMixin, \
+    ProjectAuthorRequiredMixin
 from .models import Project, Head, Link, Comment, Theme, ProxyProjectOrderedDesc, \
     ProxyProjectOrderedStars, UserProjectStatistics
 from .forms import ProjectForm, LinkForm, \
@@ -108,7 +109,6 @@ class DetailedProject(DetailView):
             session = self.request.session.get(settings.SAVED_SESSION_ID)
             if session:
                 context['is_saved'] = project.id in session
-        context['form'] = SearchForm()
         return context
 
 
@@ -316,7 +316,7 @@ class EditProfile(AuthorRequiredMixin, UpdateView):
         return reverse_lazy('links:profile', args=(self.object.id, ))
 
 
-class ProjectEdit(LoginRequiredMixin, UpdateView):
+class ProjectEdit(ProjectAuthorRequiredMixin, UpdateView):
     model = Project
     template_name = 'links/create_project.html'
     form_class = ProjectForm

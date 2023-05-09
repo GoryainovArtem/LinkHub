@@ -17,7 +17,7 @@
         <div class="card-header">{% if is_editing %} Редактировать источник "{{ link.title }}"{% else %} Создать новый источник{% endif %}</div>
         <div class="card-body">
           {{ form.media }}
-          <form method="post" action="">
+          <form method="post" action="" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.media }}
             {% for field in form %}

@@ -103,10 +103,8 @@ class Head(BaseClass):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        print('Я в разделах')
         if not self.number:
             buf = self.project.heads.aggregate(max_number=Max('number'))
-            print('Баф',buf)
             if buf['max_number'] is None:
                 value = 1
             else:
@@ -132,7 +130,7 @@ class Link(BaseClass):
                              verbose_name='Раздел')
 
     document = models.FileField('Документ', blank=True, null=True,
-                                upload_to='Files',
+                                upload_to='files/',
                                 help_text='Выберите нужный документ')
 
     class Meta:
@@ -142,12 +140,10 @@ class Link(BaseClass):
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
-        print('Я в линках')
         if not (self.url or self.document or self.description):
             raise ValidationError('Хотя бы одно из полей: описание, ссылка, документ должно быть заполнено.')
         if self.number is None:
             buf = self.head.links.aggregate(max_number=Max('number'))
-            print('Баф',buf)
             if buf['max_number'] is None:
                 value = 1
             else:

@@ -91,46 +91,48 @@
   </div>
   <form class="my-4" method="get" action="{% url 'links:project_detailed' project.id %}">
     {% csrf_token %}
-    <div class="search_block">
-      <input class="search_line" type="text" placeholder="Введите название раздела" name="q">
-      <button type="submit" class="btn btn-primary">Искать</button>
-    </div>
   </form>
   <div class="my-4">
     <h4>
       Содержание:
     </h4></div>
-    {% for head in heads %}
-      <div class="media mb-4 project_head" style="background-color: #F5F5F5">
-        <div class="media-body">
-          <div class="media_inner_container" >
-            <div class="media_inner_left" >
-              <h5 class="mt-0">
-                <a href="{% url 'links:head' head.id %}">
-                  {{ head.number }}. {{ head.title }}
-                </a>
-              </h5>
-              <p>
-                {{ head.description|get_description }}
-              </p>
-            </div>
-            <div class="media_inner_right" >
-              {% if user == head.project.main_admin or user in head.project.editor.all %}
-                <div>
-                  <a href="{% url 'links:head_edit' head.id %}" class="modify_link"><img src="{% static 'image/edit.png' %}" width="24" height="24" alt=""></a>
-                  <a href="{% url 'links:head_delete' head.id %}" class="modify_link ml-1"><img src="{% static 'image/delete.png' %}" width="24" height="24" alt=""></a>
-                </div>
-              {% endif %}
-              <h6 class="more_info">
-                <a href="">
-                  Подробнее
-                </a>
-              </h6>
+    {% if heads %}
+      {% for head in heads %}
+        <div class="media mb-4 project_head" style="background-color: #F5F5F5">
+          <div class="media-body">
+            <div class="media_inner_container" >
+              <div class="media_inner_left" >
+                <h5 class="mt-0">
+                  <a href="{% url 'links:head' head.id %}">
+                    {{ head.number }}. {{ head.title }}
+                  </a>
+                </h5>
+                <p>
+                  {{ head.description|get_description }}
+                </p>
+              </div>
+              <div class="media_inner_right" >
+                {% if user == head.project.main_admin or user in head.project.editor.all %}
+                  <div>
+                    <a href="{% url 'links:head_edit' head.id %}" class="modify_link"><img src="{% static 'image/edit.png' %}" width="24" height="24" alt=""></a>
+                    <a href="{% url 'links:head_delete' head.id %}" class="modify_link ml-1"><img src="{% static 'image/delete.png' %}" width="24" height="24" alt=""></a>
+                  </div>
+                {% endif %}
+                <h6 class="more_info">
+                  <a href="">
+                    Подробнее
+                  </a>
+                </h6>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    {% endfor %}
+      {% endfor %}
+    {% else %}
+    <div>
+      <p>У данного проекта пока еще нет разделов</p>
+    </div>
+    {% endif %}
     {% if user == project.main_admin or user in project.editor.all %}
       <a class="btn btn-primary " href="{% url 'links:create_head' project.id %}">Добавить раздел</a>
     {% endif %}
