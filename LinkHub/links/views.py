@@ -192,6 +192,14 @@ class DetailedHead(DetailView):
     pk_url_kwarg = 'id'
     context_object_name = 'head'
 
+    def get_context_data(self, **kwargs):
+        head = get_object_or_404(Head, id=self.kwargs['id'])
+        log_user_activity(head.project, self.request.user)
+        context = super().get_context_data()
+        context['is_author'] = (self.request.user == head.project.main_admin or
+                                self.request.user == head.project.editor)
+        return context
+
 
 class HeadEdit(HeadAuthorRequiredMixin, UpdateView):
     """Редактирование информации о разделе."""
@@ -222,6 +230,8 @@ class LinkDetailed(DetailView):
         link = get_object_or_404(Link, id=self.kwargs['id'])
         context['comments'] = link.comments.select_related('author')
         context['form'] = CommentForm()
+        project = link.head.project
+        log_user_activity(project, self.request.user)
         return context
 
 
@@ -400,6 +410,8 @@ class Feed(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
 
+        LIMIT_PAGE_VISIT_NUMBER = 25
+
         def form_projects_dataset(project_id_list, is_random=False):
             """
             Сформировать набор данных по заданным id для загрузки в
@@ -439,6 +451,8 @@ class Feed(LoginRequiredMixin, ListView):
             :param user_projects_dataset:
             :return:
             """
+            RECOMMEND_PROJECTS_AMOUNT = 2
+
             user_df = pd.DataFrame(user_projects_dataset)
             random_projects_df = pd.DataFrame(random_projects_dataset)
             random_projects_id_values = random_projects_df.id.values
@@ -458,15 +472,16 @@ class Feed(LoginRequiredMixin, ListView):
                 lst.append(s)
             random_projects_df['avg_corr'] = lst
             random_projects_df['id'] = random_projects_id_values
-            top_projects = list(random_projects_df.nlargest(2, 'avg_corr').id.values)
+            top_projects = list(random_projects_df.nlargest(RECOMMEND_PROJECTS_AMOUNT, 'avg_corr').id.values)
             return top_projects
 
         user_projects_criterions = Q(user=self.request.user) & (
                 Q(is_created_project=True) |
                 Q(is_liked_project=True) |
                 Q(is_saved_project=True) |
-                (Q(views_amount__gt=7)) & Q(last_visit_date__gte=timezone.now() - timedelta(days=2)))
-        us = UserProjectStatistics.objects.filter(user_projects_criterions )
+                (Q(views_amount__gt=LIMIT_PAGE_VISIT_NUMBER))
+                & Q(last_visit_date__gte=timezone.now() - timedelta(days=2)))
+        us = UserProjectStatistics.objects.filter(user_projects_criterions)
         project_ids = us.filter().values_list('project', flat=True)
         if us.count() < 0:
             return ProxyProjectOrderedStars.objects.all().exclude(id__in=us.values_list('project'))

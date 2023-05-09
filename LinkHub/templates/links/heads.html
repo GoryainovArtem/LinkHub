@@ -31,10 +31,12 @@
             </p>
           </div>
           <div class="media_inner_right" >
-            <div>
-              <a href="{% url 'links:link_edit' link.id %}" class="modify_link"><img src="{% static 'image/edit.png' %}" width="24" height="24" alt=""></a>
-              <a href="{% url 'links:link_delete' link.id %}" class="modify_link ml-1"><img src="{% static 'image/delete.png' %}" width="24" height="24" alt=""></a>
-            </div>
+            {% if is_author %}
+              <div>
+                <a href="{% url 'links:link_edit' link.id %}" class="modify_link"><img src="{% static 'image/edit.png' %}" width="24" height="24" alt=""></a>
+                <a href="{% url 'links:link_delete' link.id %}" class="modify_link ml-1"><img src="{% static 'image/delete.png' %}" width="24" height="24" alt=""></a>
+              </div>
+            {% endif %}
             <h6 class="more_info">
               <a href="">
                 Подробнее
@@ -45,9 +47,11 @@
       </div>
     </div>
   {% endfor %}
-  <div class="">
-    <a class="btn btn-primary" href="{% url 'links:create_link' head.id %}">
-     Добавить новый источник
-    </a>
-  </div>
+  {% if is_author %}
+    <div class="">
+      <a class="btn btn-primary" href="{% url 'links:create_link' head.id %}">
+       Добавить новый источник
+      </a>
+    </div>
+  {% endif %}
 {% endblock %}

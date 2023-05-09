@@ -31,7 +31,7 @@
           {% endif %}
           {% if link.description %}
             <span>
-              <h6 class="mb-3">Описание:</h6>
+              <h6 class="my-2">Описание:</h6>
               {{ link.description|safe }}
             </span>
           {% endif %}
@@ -53,18 +53,24 @@
             </div>
           </div>
           <h4 class="mb-4">Комментарии:</h4>
-          {% for comment in comments %}
-            <div class="card my-4">
-              <h5 class="card-header"><a href="{% url 'links:profile' comment.author.id %}">
-                  {% thumbnail comment.author.profile_image "360x360" as im %}
-                    <img width="65"  height="65" src="{{ im.url }}" alt="" />
-                  {% endthumbnail %}
-              </a> <span class="ml-3">{{ comment.author.username }}</span> </h5>
-              <div class="card-body">
-                {{ comment.text|safe }}
+          {% if comments %}
+            {% for comment in comments %}
+              <div class="card my-4">
+                <h5 class="card-header"><a href="{% url 'links:profile' comment.author.id %}">
+                    {% thumbnail comment.author.profile_image "360x360" as im %}
+                      <img width="65"  height="65" src="{{ im.url }}" alt="" />
+                    {% endthumbnail %}
+                </a> <span class="ml-3">{{ comment.author.username }}</span> </h5>
+                <div class="card-body">
+                  {{ comment.text|safe }}
+                </div>
               </div>
-            </div>
-          {% endfor %}
+            {% endfor %}
+          {% else %}
+          <div>
+            <p>Пользователи еще не оставили комментарии.</p>
+          </div>
+          {% endif %}
         </div>
       </div>
     </div>
