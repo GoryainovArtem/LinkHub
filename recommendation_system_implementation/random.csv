@@ -1,0 +1,5 @@
+id,main_admin,source_amount,links_percentage,image_percentage,video_percentage,document_percentage,text_percentage,stars_amount,themes
+10,2,4,0.5,0.5,1.0,0.0,0.0,10,"['Python', 'Собеседование']"
+2,3,10,0.2,0.1,0.0,0.0,0.5,3,"['Python', 'Программирование']"
+4,2,4,0.75,0.5,0.2,0.0,0.3,12,"['Машинное обучение']"
+8,2,10,0.2,0.4,1.0,1.0,1.0,2,"['Программирование']"
