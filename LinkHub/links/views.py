@@ -467,7 +467,7 @@ class Feed(LoginRequiredMixin, ListView):
                              index=random_projects_df.index))
             lst = []
             for k in range(random_projects_df.shape[0]):
-                s = sum(random_projects_df.iloc[0].corr(user_df.iloc[i]) for i in range(user_df.shape[0])) / \
+                s = sum(random_projects_df.iloc[k].corr(user_df.iloc[i]) for i in range(user_df.shape[0])) / \
                     user_df.shape[0]
                 lst.append(s)
             random_projects_df['avg_corr'] = lst
